@@ -172,20 +172,20 @@
 		}
 	},
 	"dependencies": {
-		"@popperjs/core": "^2.11.6",
-		"cockatiel": "^3.1.2",
-		"js-base64": "^3.7.2",
-		"recoil": "^0.7.7"
+		"@popperjs/core": "2.11.8",
+		"cockatiel": "3.1.2",
+		"js-base64": "3.7.7",
+		"recoil": "0.7.7"
 	},
 	"devDependencies": {
 		"@playform/build": "0.0.7",
 		"@playform/document": "0.0.6",
-		"@types/chai": "^4.3.0",
-		"@types/node": "^18.11.9",
-		"chai": "^4.3.4",
-		"esbuild": "^0.19.0",
-		"esbuild-css-modules-plugin": "^3.1.0",
-		"esbuild-plugin-svgr": "^2.1.0"
+		"@types/chai": "4.3.14",
+		"@types/node": "20.12.7",
+		"chai": "5.1.0",
+		"esbuild": "0.20.2",
+		"esbuild-css-modules-plugin": "3.1.2",
+		"esbuild-plugin-svgr": "2.1.0"
 	},
 	"publishConfig": {
 		"access": "public"

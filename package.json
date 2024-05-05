@@ -4,27 +4,30 @@
 	"version": "0.0.1",
 	"private": false,
 	"description": "%description%",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"keywords": [
+		"land"
+	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/LandHexEditor#readme",
 	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/LandHexEditor/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+		"url": "git+HTTPS://github.com/CodeEditorLand/LandHexEditor.git"
 	},
 	"license": "SEE LICENSE IN LICENSE",
 	"author": {
-		"name": "Playform",
-		"email": "Hello@Playform.Cloud",
-		"url": "https://playform.cloud"
+		"name": "🌆 — Land —",
+		"email": "Land@PlayForm.Cloud",
+		"url": "HTTPS://Land.PlayForm.Cloud"
 	},
 	"type": "module",
 	"main": "./dist/extension.js",
 	"browser": "./dist/web/extension.js",
 	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
 		"compile": "tsc --noEmit && node .esbuild.config.js",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"watch": "node .esbuild.config.js --watch"
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"commands": [
@@ -43,6 +46,11 @@
 				"category": "%name%",
 				"command": "hexEditor.selectBetweenOffsets",
 				"title": "%hexEditor.selectBetweenOffsets%"
+			},
+			{
+				"category": "%name%",
+				"command": "hexEditor.switchEditMode",
+				"title": "%hexEditor.switchEditMode%"
 			}
 		],
 		"configuration": [
@@ -116,12 +124,21 @@
 				"command": "hexEditor.goToOffset",
 				"key": "ctrl+g",
 				"when": "activeCustomEditorId == hexEditor.hexedit"
+			},
+			{
+				"command": "hexEditor.switchEditMode",
+				"key": "Insert",
+				"when": "hexEditor:isActive"
 			}
 		],
 		"menus": {
 			"commandPalette": [
 				{
 					"command": "hexEditor.goToOffset",
+					"when": "hexEditor:isActive"
+				},
+				{
+					"command": "hexEditor.switchEditMode",
 					"when": "hexEditor:isActive"
 				}
 			],
@@ -156,31 +173,19 @@
 	},
 	"dependencies": {
 		"@popperjs/core": "2.11.8",
-		"@vscode/codicons": "0.0.35",
-		"@vscode/extension-telemetry": "0.9.3",
 		"cockatiel": "3.1.2",
 		"js-base64": "3.7.7",
-		"react": "18.2.0",
-		"react-dom": "18.2.0",
-		"react-popper": "2.3.0",
-		"recoil": "0.7.7",
-		"vscode-webview-tools": "0.1.1"
+		"recoil": "0.7.7"
 	},
 	"devDependencies": {
-		"@types/chai": "4.3.13",
-		"@types/mocha": "10.0.6",
-		"@types/node": "20.11.30",
-		"@types/react": "18.2.67",
-		"@types/react-dom": "18.2.22",
-		"@types/vscode": "1.87.0",
-		"@vscode/test-electron": "2.3.9",
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6",
+		"@types/chai": "4.3.14",
+		"@types/node": "20.12.7",
 		"chai": "5.1.0",
 		"esbuild": "0.20.2",
-		"esbuild-css-modules-plugin": "3.1.0",
-		"esbuild-plugin-svgr": "2.1.0",
-		"mocha": "10.3.0",
-		"typescript": "5.4.2",
-		"typescript-esbuild": "0.4.5"
+		"esbuild-css-modules-plugin": "3.1.2",
+		"esbuild-plugin-svgr": "2.1.0"
 	},
 	"publishConfig": {
 		"access": "public"

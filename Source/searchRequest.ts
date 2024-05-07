@@ -78,12 +78,12 @@ export class LiteralSearchRequest implements ISearchRequest {
 		private readonly cap: number | undefined,
 	) {}
 
-	/** @inheritdoc */
+	
 	public dispose(): void {
 		this.cancelled = true;
 	}
 
-	/** @inheritdoc */
+	
 	public async *search(): AsyncIterableIterator<SearchResultsWithProgress> {
 		const { isCaseSensitive, query, document, cap } = this;
 		const collector = new ResultsCollector(await document.size(), cap);
@@ -140,12 +140,12 @@ export class RegexSearchRequest implements ISearchRequest {
 		this.re = new RegExp(re.re, caseSensitive ? "g" : "ig");
 	}
 
-	/** @inheritdoc */
+	
 	public dispose(): void {
 		this.cancelled = true;
 	}
 
-	/** @inheritdoc */
+	
 	public async *search(): AsyncIterableIterator<SearchResultsWithProgress> {
 		let str = "";
 		let strStart = 0;

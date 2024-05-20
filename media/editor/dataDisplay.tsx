@@ -4,7 +4,12 @@
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { EditRangeOp, HexDocumentEditOp } from "../../shared/hexDocumentModel";
-import { DeleteAcceptedMessage, InspectorLocation, MessageType } from "../../shared/protocol";
+import {
+	CopyFormat,
+	DeleteAcceptedMessage,
+	InspectorLocation,
+	MessageType,
+} from "../../shared/protocol";
 import { Range } from "../../shared/util/range";
 import { PastePopup } from "./copyPaste";
 import _style from "./dataDisplay.css";
@@ -288,7 +293,7 @@ export const DataDisplay: React.FC = () => {
 			select.messageHandler.sendEvent({
 				type: MessageType.DoCopy,
 				selections: ctx.selection.map(r => [r.start, r.end]),
-				asText: ctx.focusedElement.char,
+				format: ctx.focusedElement.char ? CopyFormat.Utf8 : CopyFormat.Base64,
 			});
 		}
 	});
@@ -481,6 +486,17 @@ const DataCell: React.FC<{
 
 	const onMouseDown = useCallback(
 		(e: React.MouseEvent) => {
+			if (e.buttons === 2) {
+				// Sets a new range and focused when the user opens
+				// the context menu outside the selected range, just
+				// like the text editor.
+				if (!ctx.isSelected(focusedElement.byte)) {
+					ctx.focusedElement = focusedElement;
+					ctx.isSelecting = undefined;
+					ctx.setSelectionRanges([Range.single(offset)]);
+				}
+				return;
+			}
 			if (!(e.buttons & 1)) {
 				return;
 			}

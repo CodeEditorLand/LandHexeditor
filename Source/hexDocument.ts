@@ -91,7 +91,7 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 		return this.model.isReadonly;
 	}
 
-	
+	/** @inheritdoc */
 	public get uri(): vscode.Uri {
 		return vscode.Uri.parse(this.model.uri);
 	}

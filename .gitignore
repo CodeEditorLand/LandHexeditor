@@ -3,5 +3,4 @@ out
 *.vsix
 dist
 !dist/inspector.css
-.DS_Store
 dist/web

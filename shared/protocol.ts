@@ -295,8 +295,14 @@ export type FromWebviewMessage =
 	| CopyMessage
 	| RequestDeletesMessage;
 
-export type ExtensionHostMessageHandler = MessageHandler<ToWebviewMessage, FromWebviewMessage>;
-export type WebviewMessageHandler = MessageHandler<FromWebviewMessage, ToWebviewMessage>;
+export type ExtensionHostMessageHandler = MessageHandler<
+	ToWebviewMessage,
+	FromWebviewMessage
+>;
+export type WebviewMessageHandler = MessageHandler<
+	FromWebviewMessage,
+	ToWebviewMessage
+>;
 
 /**
  * Helper for postMessage-based RPC.
@@ -323,7 +329,10 @@ export class MessageHandler<TTo, TFrom> {
 		const id = this.messageIdCounter++;
 		this.postMessage({ body: msg, messageId: id });
 		return new Promise<TResponse>((resolve, reject) => {
-			this.pendingMessages.set(id, { resolve: resolve as (msg: TFrom) => void, reject });
+			this.pendingMessages.set(id, {
+				resolve: resolve as (msg: TFrom) => void,
+				reject,
+			});
 		});
 	}
 
@@ -343,7 +352,7 @@ export class MessageHandler<TTo, TFrom> {
 			this.pendingMessages.delete(message.inReplyTo);
 		} else {
 			Promise.resolve(this.messageHandler(message.body)).then(
-				reply => reply && this.sendReply(message, reply),
+				(reply) => reply && this.sendReply(message, reply),
 			);
 		}
 	}

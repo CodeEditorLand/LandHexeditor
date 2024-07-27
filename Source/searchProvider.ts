@@ -14,13 +14,19 @@ export class SearchProvider {
 	 * @description Creates a new search request and returns the request object
 	 * @
 	 */
-	public start(messaging: ExtensionHostMessageHandler, request: ISearchRequest): void {
+	public start(
+		messaging: ExtensionHostMessageHandler,
+		request: ISearchRequest,
+	): void {
 		this._request?.dispose();
 		this._request = request;
 
 		(async () => {
 			for await (const results of request.search()) {
-				messaging.sendEvent({ type: MessageType.SearchProgress, data: results });
+				messaging.sendEvent({
+					type: MessageType.SearchProgress,
+					data: results,
+				});
 			}
 		})();
 	}

@@ -34,7 +34,12 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 			isFiniteSize: true,
 			supportsLengthChanges: true,
 			edits: backupId
-				? { unsaved: await new Backup(vscode.Uri.parse(backupId)).read(), saved: [] }
+				? {
+						unsaved: await new Backup(
+							vscode.Uri.parse(backupId),
+						).read(),
+						saved: [],
+					}
 				: undefined,
 		});
 
@@ -49,13 +54,24 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 				"fileSize" : { "classification": "SystemMetaData", "purpose": "FeatureInsight", "isMeasurement": true }
 			}
 		*/
-		telemetryReporter.sendTelemetryEvent("fileOpen", {}, { fileSize: fileSize ?? 0 });
+		telemetryReporter.sendTelemetryEvent(
+			"fileOpen",
+			{},
+			{ fileSize: fileSize ?? 0 },
+		);
 
 		const maxFileSize =
-			(vscode.workspace.getConfiguration().get("hexeditor.maxFileSize") as number) * 1000000;
+			(vscode.workspace
+				.getConfiguration()
+				.get("hexeditor.maxFileSize") as number) * 1000000;
 		const isLargeFile =
-			!backupId && !accessor.supportsIncremetalAccess && (fileSize ?? 0) > maxFileSize;
-		return { document: new HexDocument(model, isLargeFile, baseAddress), accessor };
+			!backupId &&
+			!accessor.supportsIncremetalAccess &&
+			(fileSize ?? 0) > maxFileSize;
+		return {
+			document: new HexDocument(model, isLargeFile, baseAddress),
+			accessor,
+		};
 	}
 
 	// Last save time
@@ -95,12 +111,14 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 	public get uri(): vscode.Uri {
 		return vscode.Uri.parse(this.model.uri);
 	}
-	
+
 	/**
 	 * Reads data including unsaved edits from the model, returning an iterable
 	 * of Uint8Array chunks.
 	 */
-	public readWithUnsavedEdits(offset: number): AsyncIterableIterator<Uint8Array> {
+	public readWithUnsavedEdits(
+		offset: number,
+	): AsyncIterableIterator<Uint8Array> {
 		return this.model.readWithUnsavedEdits(offset);
 	}
 
@@ -108,7 +126,10 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 	 * Reads the amount of data from the model, including edits, into a
 	 * buffer of the requested length.
 	 */
-	public async readBufferWithEdits(offset: number, length: number): Promise<Uint8Array> {
+	public async readBufferWithEdits(
+		offset: number,
+		length: number,
+	): Promise<Uint8Array> {
 		const target = new Uint8Array(length);
 		let soFar = 0;
 		for await (const chunk of this.model.readWithUnsavedEdits(offset)) {
@@ -126,13 +147,18 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 	/**
 	 * Reads into the buffer from the original file, without edits.
 	 */
-	public async readBuffer(offset: number, length: number): Promise<Uint8Array> {
+	public async readBuffer(
+		offset: number,
+		length: number,
+	): Promise<Uint8Array> {
 		const target = new Uint8Array(length);
 		const read = await this.model.readInto(offset, target);
 		return read === length ? target : target.slice(0, read);
 	}
 
-	private readonly _onDidDispose = this._register(new vscode.EventEmitter<void>());
+	private readonly _onDidDispose = this._register(
+		new vscode.EventEmitter<void>(),
+	);
 	/*
 		Fires when the document is disposed of
 	*/
@@ -153,7 +179,8 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 	/**
 	 * Fired when the document selection or focus changes.
 	 */
-	public readonly onDidChangeSelectionState = this._onDidChangeSelectionState.event;
+	public readonly onDidChangeSelectionState =
+		this._onDidChangeSelectionState.event;
 
 	public get selectionState() {
 		return this._selectionState;
@@ -165,7 +192,9 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 	}
 
 	private readonly _onDidChangeEditMode = this._register(
-		new vscode.EventEmitter<HexDocumentEditOp.Insert | HexDocumentEditOp.Replace>(),
+		new vscode.EventEmitter<
+			HexDocumentEditOp.Insert | HexDocumentEditOp.Replace
+		>(),
 	);
 
 	/**
@@ -177,7 +206,9 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 		return this._editMode;
 	}
 
-	public set editMode(mode: HexDocumentEditOp.Insert | HexDocumentEditOp.Replace) {
+	public set editMode(
+		mode: HexDocumentEditOp.Insert | HexDocumentEditOp.Replace,
+	) {
 		this._editMode = mode;
 		this._onDidChangeEditMode.fire(mode);
 	}
@@ -197,7 +228,9 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 		this._onDidChangeHoverState.fire(byte);
 	}
 
-	private readonly _onDidRevert = this._register(new vscode.EventEmitter<void>());
+	private readonly _onDidRevert = this._register(
+		new vscode.EventEmitter<void>(),
+	);
 
 	/**
 	 * Fired to notify webviews that the document has changed and the file
@@ -228,7 +261,9 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 	/**
 	 * @see HexDocumentModel.makeEdits
 	 */
-	public makeEdits(edits: readonly HexDocumentEdit[]): HexDocumentEditReference {
+	public makeEdits(
+		edits: readonly HexDocumentEdit[],
+	): HexDocumentEditReference {
 		return this.model.makeEdits(edits);
 	}
 
@@ -236,17 +271,29 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 	 * Inserts data into the document.
 	 */
 	public insert(offset: number, data: Uint8Array): HexDocumentEditReference {
-		return this.model.makeEdits([{ op: HexDocumentEditOp.Insert, offset, value: data }]);
+		return this.model.makeEdits([
+			{ op: HexDocumentEditOp.Insert, offset, value: data },
+		]);
 	}
 
 	/**
 	 * Replaces data into the document. If the data is larger than the document,
 	 * then this results in the necessary additional insertion operation.
 	 */
-	public async replace(offset: number, data: Uint8Array): Promise<HexDocumentEditReference> {
+	public async replace(
+		offset: number,
+		data: Uint8Array,
+	): Promise<HexDocumentEditReference> {
 		const previous = await this.readBufferWithEdits(offset, data.length);
 		if (previous.length === data.length) {
-			return this.makeEdits([{ op: HexDocumentEditOp.Replace, offset, value: data, previous }]);
+			return this.makeEdits([
+				{
+					op: HexDocumentEditOp.Replace,
+					offset,
+					value: data,
+					previous,
+				},
+			]);
 		} else {
 			return this.makeEdits([
 				{
@@ -320,7 +367,9 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 	 *
 	 * These backups are used to implement hot exit.
 	 */
-	async backup(destination: vscode.Uri): Promise<vscode.CustomDocumentBackup> {
+	async backup(
+		destination: vscode.Uri,
+	): Promise<vscode.CustomDocumentBackup> {
 		const backup = new Backup(destination);
 		await backup.write(this.model.unsavedEdits);
 
@@ -342,7 +391,9 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 	private static parseQuery(queryString: string): { [key: string]: string } {
 		const queries: { [key: string]: string } = {};
 		if (queryString) {
-			const pairs = (queryString[0] === "?" ? queryString.substr(1) : queryString).split("&");
+			const pairs = (
+				queryString[0] === "?" ? queryString.substr(1) : queryString
+			).split("&");
 			for (const q of pairs) {
 				const pair = q.split("=");
 				const name = pair.shift();
@@ -359,6 +410,8 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 	 */
 	private static parseHexOrDecInt(str: string): number {
 		str = str.toLowerCase();
-		return str.startsWith("0x") ? parseInt(str.substring(2), 16) : parseInt(str, 10);
+		return str.startsWith("0x")
+			? parseInt(str.substring(2), 16)
+			: parseInt(str, 10);
 	}
 }

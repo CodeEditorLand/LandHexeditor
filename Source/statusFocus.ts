@@ -21,12 +21,17 @@ export default class StatusFocus extends Disposable {
 		super();
 
 		this.item = this._register(
-			vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100),
+			vscode.window.createStatusBarItem(
+				vscode.StatusBarAlignment.Right,
+				100,
+			),
 		);
 
 		const trackDocument = (doc: HexDocument | undefined) => {
 			if (doc) {
-				this.docChangeListener.value = doc.onDidChangeSelectionState(e => this.update(e));
+				this.docChangeListener.value = doc.onDidChangeSelectionState(
+					(e) => this.update(e),
+				);
 				this.update(doc.selectionState);
 				this.show();
 			} else {
@@ -39,9 +44,14 @@ export default class StatusFocus extends Disposable {
 	}
 
 	update({ focused }: ISelectionState): void {
-		const nFocus = focused !== undefined ? numberFormat.format(focused) : undefined;
+		const nFocus =
+			focused !== undefined ? numberFormat.format(focused) : undefined;
 		if (nFocus) {
-			this.item.text = vscode.l10n.t("{0}/0x{1}", nFocus, focused!.toString(16).toUpperCase());
+			this.item.text = vscode.l10n.t(
+				"{0}/0x{1}",
+				nFocus,
+				focused!.toString(16).toUpperCase(),
+			);
 			this.item.show();
 		} else {
 			this.item.hide();

@@ -87,13 +87,16 @@ export class HexEditorProvider
 		openContext: vscode.CustomDocumentOpenContext,
 		_token: vscode.CancellationToken,
 	): Promise<HexDocument> {
+		const diff = this._registry.getDiff(uri);
+
 		const { document, accessor } = await HexDocument.create(
 			uri,
 			openContext,
 			this._telemetryReporter,
+			diff.builder,
 		);
 		const disposables: vscode.Disposable[] = [];
-
+		disposables.push(diff);
 		disposables.push(
 			document.onDidRevert(async () => {
 				const replaceFileSize = (await document.size()) ?? null;
@@ -382,6 +385,7 @@ export class HexEditorProvider
 					isLargeFile: document.isLargeFile,
 					isReadonly: document.isReadonly,
 					editMode: document.editMode,
+					decorators: await document.readDecorators(),
 				};
 			case MessageType.SetSelectedCount:
 				document.selectionState = message;

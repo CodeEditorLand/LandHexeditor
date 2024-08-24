@@ -93,7 +93,12 @@ export const enum EditRangeOp {
 
 export type EditRange =
 	/** Read from "roffset" in the file, starting at "offset" in the edited version */
-	| { op: EditRangeOp.Read; editIndex: number; offset: number; roffset: number }
+	| {
+			op: EditRangeOp.Read;
+			editIndex: number;
+			offset: number;
+			roffset: number;
+	  }
 	/** Skip starting at "offset" in the edited version of the file */
 	| { op: EditRangeOp.Skip; editIndex: number; offset: number }
 	/** Insert "value" at the "offset" in th edited version of the file */
@@ -119,7 +124,9 @@ export class HexDocumentModel {
 	private _edits: HexDocumentEdit[];
 
 	constructor(options: HexDocumentModelOptions) {
-		this._edits = options.edits ? options.edits.saved.concat(options.edits.unsaved) : [];
+		this._edits = options.edits
+			? options.edits.saved.concat(options.edits.unsaved)
+			: [];
 		this._unsavedEditIndex = options.edits?.saved.length ?? 0;
 		this.supportsLengthChanges = options.supportsLengthChanges;
 		this.isFiniteSize = options.isFiniteSize;
@@ -220,7 +227,12 @@ export class HexDocumentModel {
 		fromOffset = 0,
 		chunkSize = 128 * 1024,
 	): AsyncIterableIterator<Uint8Array> {
-		return readUsingRanges(this.accessor, this.getAllEditTimeline().ranges, fromOffset, chunkSize);
+		return readUsingRanges(
+			this.accessor,
+			this.getAllEditTimeline().ranges,
+			fromOffset,
+			chunkSize,
+		);
 	}
 
 	/**
@@ -251,11 +263,16 @@ export class HexDocumentModel {
 			// the offset of the first edit. For replacements we can selectively write.
 			if (
 				!toSave.some(
-					e => e.op !== HexDocumentEditOp.Replace || e.previous.length !== e.value.length,
+					(e) =>
+						e.op !== HexDocumentEditOp.Replace ||
+						e.previous.length !== e.value.length,
 				)
 			) {
 				await this.accessor.writeBulk(
-					toSave.map(e => ({ offset: e.offset, data: (e as HexDocumentReplaceEdit).value })),
+					toSave.map((e) => ({
+						offset: e.offset,
+						data: (e as HexDocumentReplaceEdit).value,
+					})),
 				);
 			} else {
 				// todo: technically only need to rewrite starting from the first edit
@@ -285,7 +302,9 @@ export class HexDocumentModel {
 	 * called once all subsequently made edits have also been undone, and
 	 * vise versa for `redo`.
 	 */
-	public makeEdits(edits: readonly HexDocumentEdit[]): HexDocumentEditReference {
+	public makeEdits(
+		edits: readonly HexDocumentEdit[],
+	): HexDocumentEditReference {
 		const index = this._edits.length;
 		this._edits.push(...edits);
 		this.getAllEditTimeline.forget();
@@ -328,7 +347,9 @@ export class HexDocumentModel {
 	 * "offset". This can be used to generate file data. Includes unsaved and
 	 * saved edits.
 	 */
-	private readonly getAllEditTimeline = once(() => buildEditTimeline(this._edits));
+	private readonly getAllEditTimeline = once(() =>
+		buildEditTimeline(this._edits),
+	);
 
 	private readonly getUnsavedEditTimeline = once(() => {
 		return buildEditTimeline(this._edits.slice(this._unsavedEditIndex));
@@ -369,7 +390,10 @@ export async function* readUsingRanges(
 				continue;
 			}
 
-			const toYield = readLast < range.value.length ? range.value.subarray(-readLast) : range.value;
+			const toYield =
+				readLast < range.value.length
+					? range.value.subarray(-readLast)
+					: range.value;
 			if (toYield.length > 0) {
 				yield toYield;
 			}
@@ -378,7 +402,9 @@ export async function* readUsingRanges(
 
 		// range.op === Read
 		const until =
-			range.roffset + (i + 1 < ranges.length ? ranges[i + 1].offset : Infinity) - range.offset;
+			range.roffset +
+			(i + 1 < ranges.length ? ranges[i + 1].offset : Infinity) -
+			range.offset;
 		let roffset = range.roffset + Math.max(0, fromOffset - range.offset);
 		while (roffset < until) {
 			const bytes = await readable.read(
@@ -399,7 +425,9 @@ export const buildEditTimeline = (
 ): IEditTimeline => {
 	// Serialize all edits to a single, continuous "timeline", which we'll
 	// iterate through in order to read data and yield bytes.
-	const ranges: EditRange[] = [{ op: EditRangeOp.Read, editIndex: -1, roffset: 0, offset: 0 }];
+	const ranges: EditRange[] = [
+		{ op: EditRangeOp.Read, editIndex: -1, roffset: 0, offset: 0 },
+	];
 
 	/** Splits the "range" into two parts at the given byte within the range */
 	const getSplit = (
@@ -409,7 +437,12 @@ export const buildEditTimeline = (
 	): { before: EditRange; after: EditRange } => {
 		if (split.op === EditRangeOp.Read) {
 			return {
-				before: { op: EditRangeOp.Read, editIndex, roffset: split.roffset, offset: split.offset },
+				before: {
+					op: EditRangeOp.Read,
+					editIndex,
+					roffset: split.roffset,
+					offset: split.offset,
+				},
 				after: {
 					op: EditRangeOp.Read,
 					editIndex,
@@ -419,8 +452,16 @@ export const buildEditTimeline = (
 			};
 		} else if (split.op === EditRangeOp.Skip) {
 			return {
-				before: { op: EditRangeOp.Skip, editIndex, offset: split.offset },
-				after: { op: EditRangeOp.Skip, editIndex, offset: split.offset + atByte },
+				before: {
+					op: EditRangeOp.Skip,
+					editIndex,
+					offset: split.offset,
+				},
+				after: {
+					op: EditRangeOp.Skip,
+					editIndex,
+					offset: split.offset + atByte,
+				},
 			};
 		} else if (split.op === EditRangeOp.Insert) {
 			return {
@@ -455,7 +496,7 @@ export const buildEditTimeline = (
 		}
 	};
 
-	const searcher = binarySearch<EditRange>(r => r.offset);
+	const searcher = binarySearch<EditRange>((r) => r.offset);
 	let sizeDelta = 0;
 
 	/** Shifts the offset of all ranges after i by the amount */
@@ -503,14 +544,21 @@ export const buildEditTimeline = (
 				until - i + 1,
 				before,
 				edit.op === HexDocumentEditOp.Replace
-					? { op: EditRangeOp.Insert, editIndex, offset: edit.offset, value: edit.value }
+					? {
+							op: EditRangeOp.Insert,
+							editIndex,
+							offset: edit.offset,
+							value: edit.value,
+						}
 					: { op: EditRangeOp.Skip, editIndex, offset: edit.offset },
 				after,
 			);
 
 			shiftAfter(
 				i + 2,
-				(edit.op === HexDocumentEditOp.Replace ? edit.value.length : 0) - edit.previous.length,
+				(edit.op === HexDocumentEditOp.Replace
+					? edit.value.length
+					: 0) - edit.previous.length,
 			);
 		}
 	}

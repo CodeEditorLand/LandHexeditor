@@ -15,7 +15,8 @@ export const showSelectBetweenOffsets = async (
 	let focusedOffset: string | undefined = undefined;
 
 	// acquire selection state from active HexDocument
-	const selectionState: ISelectionState | undefined = registry.activeDocument?.selectionState;
+	const selectionState: ISelectionState | undefined =
+		registry.activeDocument?.selectionState;
 
 	// if there is a selection, use the focused offset as the starting offset
 	if (
@@ -27,9 +28,14 @@ export const showSelectBetweenOffsets = async (
 		focusedOffset = `0x${selectionState.focused.toString(16)}`;
 	}
 
-	const offset1 = await getOffset(vscode.l10n.t("Enter offset to select from"), focusedOffset);
+	const offset1 = await getOffset(
+		vscode.l10n.t("Enter offset to select from"),
+		focusedOffset,
+	);
 	if (offset1 !== undefined) {
-		const offset2 = await getOffset(vscode.l10n.t("Enter offset to select until"));
+		const offset2 = await getOffset(
+			vscode.l10n.t("Enter offset to select until"),
+		);
 		if (offset2 !== undefined) {
 			messaging.sendEvent({
 				type: MessageType.SetFocusedByteRange,
@@ -39,7 +45,10 @@ export const showSelectBetweenOffsets = async (
 		}
 	}
 
-	async function getOffset(inputBoxTitle: string, value?: string): Promise<number | undefined> {
+	async function getOffset(
+		inputBoxTitle: string,
+		value?: string,
+	): Promise<number | undefined> {
 		const disposables: vscode.Disposable[] = [];
 		try {
 			return await new Promise<number | undefined>((resolve, _reject) => {
@@ -61,7 +70,7 @@ export const showSelectBetweenOffsets = async (
 						input.enabled = true;
 						input.busy = false;
 					}),
-					input.onDidChangeValue(text => {
+					input.onDidChangeValue((text) => {
 						const offset = validate(text);
 
 						if (offset === undefined) {
@@ -69,11 +78,16 @@ export const showSelectBetweenOffsets = async (
 								"Offset must be provided as a decimal (12345) or hex (0x12345) address";
 						} else {
 							input.validationMessage = "";
-							messaging.sendEvent({ type: MessageType.GoToOffset, offset: offset });
+							messaging.sendEvent({
+								type: MessageType.GoToOffset,
+								offset: offset,
+							});
 						}
 					}),
 					input.onDidHide(() => {
-						messaging.sendEvent({ type: MessageType.PopDisplayedOffset });
+						messaging.sendEvent({
+							type: MessageType.PopDisplayedOffset,
+						});
 						resolve(undefined);
 					}),
 					input,
@@ -81,7 +95,7 @@ export const showSelectBetweenOffsets = async (
 				input.show();
 			});
 		} finally {
-			disposables.forEach(d => d.dispose());
+			disposables.forEach((d) => d.dispose());
 		}
 
 		function validate(text: string): number | undefined {

@@ -36,18 +36,30 @@ export class HexEditorRegistry extends Disposable {
 	 * Messaging for the active hex editor.
 	 */
 	public get activeMessaging(): Iterable<ExtensionHostMessageHandler> {
-		return (this._activeDocument && this.docs.get(this._activeDocument)) || EMPTY;
+		return (
+			(this._activeDocument && this.docs.get(this._activeDocument)) ||
+			EMPTY
+		);
 	}
 
 	constructor(private readonly initDiffWorker: () => DiffExtensionHostMessageHandler) {
 		super();
-		this._register(vscode.window.tabGroups.onDidChangeTabs(this.onChangedTabs, this));
-		this._register(vscode.window.tabGroups.onDidChangeTabGroups(this.onChangedTabs, this));
+		this._register(
+			vscode.window.tabGroups.onDidChangeTabs(this.onChangedTabs, this),
+		);
+		this._register(
+			vscode.window.tabGroups.onDidChangeTabGroups(
+				this.onChangedTabs,
+				this,
+			),
+		);
 		this.onChangedTabs();
 	}
 
 	/** Gets messaging info for a document */
-	public getMessaging(document: HexDocument): Iterable<ExtensionHostMessageHandler> {
+	public getMessaging(
+		document: HexDocument,
+	): Iterable<ExtensionHostMessageHandler> {
 		return this.docs.get(document) || EMPTY;
 	}
 
@@ -111,7 +123,8 @@ export class HexEditorRegistry extends Disposable {
 
 	private onChangedTabs() {
 		const input = vscode.window.tabGroups.activeTabGroup.activeTab?.input;
-		const uri = input instanceof vscode.TabInputCustom ? input.uri : undefined;
+		const uri =
+			input instanceof vscode.TabInputCustom ? input.uri : undefined;
 		let next: HexDocument | undefined = undefined;
 		if (uri) {
 			for (const doc of this.docs.keys()) {
@@ -127,7 +140,11 @@ export class HexEditorRegistry extends Disposable {
 		}
 
 		this._activeDocument = next;
-		vscode.commands.executeCommand("setContext", "hexEditor:isActive", !!next);
+		vscode.commands.executeCommand(
+			"setContext",
+			"hexEditor:isActive",
+			!!next,
+		);
 		this.onChangeEmitter.fire(next);
 	}
 }

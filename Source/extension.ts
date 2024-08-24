@@ -31,12 +31,17 @@ function readConfigFromPackageJson(extension: vscode.Extension<any>): {
 }
 
 function reopenWithHexEditor() {
-	const activeTabInput = vscode.window.tabGroups.activeTabGroup.activeTab?.input as {
+	const activeTabInput = vscode.window.tabGroups.activeTabGroup.activeTab
+		?.input as {
 		[key: string]: any;
 		uri: vscode.Uri | undefined;
 	};
 	if (activeTabInput.uri) {
-		vscode.commands.executeCommand("vscode.openWith", activeTabInput.uri, "hexEditor.hexedit");
+		vscode.commands.executeCommand(
+			"vscode.openWith",
+			activeTabInput.uri,
+			"hexEditor.hexedit",
+		);
 	}
 }
 
@@ -47,12 +52,18 @@ export async function activate(context: vscode.ExtensionContext) {
 	);
 	const registry = new HexEditorRegistry(initWorker);
 	// Register the data inspector as a separate view on the side
-	const dataInspectorProvider = new DataInspectorView(context.extensionUri, registry);
+	const dataInspectorProvider = new DataInspectorView(
+		context.extensionUri,
+		registry,
+	);
 	const configValues = readConfigFromPackageJson(context.extension);
 	context.subscriptions.push(
 		registry,
 		dataInspectorProvider,
-		vscode.window.registerWebviewViewProvider(DataInspectorView.viewType, dataInspectorProvider),
+		vscode.window.registerWebviewViewProvider(
+			DataInspectorView.viewType,
+			dataInspectorProvider,
+		),
 	);
 
 	const telemetryReporter = new TelemetryReporter(
@@ -65,12 +76,15 @@ export async function activate(context: vscode.ExtensionContext) {
 		"hexEditor.openFile",
 		reopenWithHexEditor,
 	);
-	const goToOffsetCommand = vscode.commands.registerCommand("hexEditor.goToOffset", () => {
-		const first = registry.activeMessaging[Symbol.iterator]().next();
-		if (first.value) {
-			showGoToOffset(first.value);
-		}
-	});
+	const goToOffsetCommand = vscode.commands.registerCommand(
+		"hexEditor.goToOffset",
+		() => {
+			const first = registry.activeMessaging[Symbol.iterator]().next();
+			if (first.value) {
+				showGoToOffset(first.value);
+			}
+		},
+	);
 	const selectBetweenOffsetsCommand = vscode.commands.registerCommand(
 		"hexEditor.selectBetweenOffsets",
 		() => {
@@ -103,17 +117,47 @@ export async function activate(context: vscode.ExtensionContext) {
 			if (focused !== undefined) {
 				vscode.env.clipboard.writeText(focused.toString(16).toUpperCase());
 			}
-		}
-	});
+		},
+	);
 
-	const copyOffsetAsDec = vscode.commands.registerCommand("hexEditor.copyOffsetAsDec", () => {
-		if (registry.activeDocument) {
-			const focused = registry.activeDocument.selectionState.focused;
-			if (focused !== undefined) {
-				vscode.env.clipboard.writeText(focused.toString());
+	const switchEditModeCommand = vscode.commands.registerCommand(
+		"hexEditor.switchEditMode",
+		() => {
+			if (registry.activeDocument) {
+				registry.activeDocument.editMode =
+					registry.activeDocument.editMode ===
+					HexDocumentEditOp.Insert
+						? HexDocumentEditOp.Replace
+						: HexDocumentEditOp.Insert;
 			}
-		}
-	});
+		},
+	);
+
+	const copyOffsetAsHex = vscode.commands.registerCommand(
+		"hexEditor.copyOffsetAsHex",
+		() => {
+			if (registry.activeDocument) {
+				const focused = registry.activeDocument.selectionState.focused;
+				if (focused !== undefined) {
+					vscode.env.clipboard.writeText(
+						focused.toString(16).toUpperCase(),
+					);
+				}
+			}
+		},
+	);
+
+	const copyOffsetAsDec = vscode.commands.registerCommand(
+		"hexEditor.copyOffsetAsDec",
+		() => {
+			if (registry.activeDocument) {
+				const focused = registry.activeDocument.selectionState.focused;
+				if (focused !== undefined) {
+					vscode.env.clipboard.writeText(focused.toString());
+				}
+			}
+		},
+	);
 
 	const compareSelectedCommand = vscode.commands.registerCommand(
 		"hexEditor.compareSelected",
@@ -146,7 +190,12 @@ export async function activate(context: vscode.ExtensionContext) {
 		}),
 	);
 	context.subscriptions.push(
-		HexEditorProvider.register(context, telemetryReporter, dataInspectorProvider, registry),
+		HexEditorProvider.register(
+			context,
+			telemetryReporter,
+			dataInspectorProvider,
+			registry,
+		),
 	);
 }
 

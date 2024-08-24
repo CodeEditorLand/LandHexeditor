@@ -10,7 +10,11 @@ import {
 } from "../shared/protocol";
 import { Uint8ArrayMap } from "../shared/util/uint8ArrayMap";
 import { HexDocument } from "./hexDocument";
-import { LiteralSearch, Wildcard, caseInsensitiveEquivalency } from "./literalSearch";
+import {
+	LiteralSearch,
+	Wildcard,
+	caseInsensitiveEquivalency,
+} from "./literalSearch";
 
 /** Type that defines a search request created from the {@link SearchProvider} */
 export interface ISearchRequest extends Disposable {
@@ -38,7 +42,10 @@ class ResultsCollector {
 	/** Adds results to the collector */
 	public push(previousRef: Uint8Array, from: number, to: number) {
 		// Copy the array, if new, since the search will return mutable references
-		const previous = this.buffers.set(previousRef, () => new Uint8Array(previousRef));
+		const previous = this.buffers.set(
+			previousRef,
+			() => new Uint8Array(previousRef),
+		);
 
 		if (this.cap === undefined) {
 			this.results.push({ from, to, previous });
@@ -51,11 +58,17 @@ class ResultsCollector {
 	/** Returns the results to yield right now, if any */
 	public toYield(): SearchResultsWithProgress | undefined {
 		const now = Date.now();
-		if (now - this.lastYieldedTime > ResultsCollector.targetUpdateInterval) {
+		if (
+			now - this.lastYieldedTime >
+			ResultsCollector.targetUpdateInterval
+		) {
 			this.lastYieldedTime = now;
 			const results = this.results;
 			this.results = [];
-			return { progress: this.filesize ? this.fileOffset / this.filesize : 0, results };
+			return {
+				progress: this.filesize ? this.fileOffset / this.filesize : 0,
+				results,
+			};
 		}
 
 		return undefined;
@@ -89,7 +102,7 @@ export class LiteralSearchRequest implements ISearchRequest {
 		const collector = new ResultsCollector(await document.size(), cap);
 
 		const streamSearch = new LiteralSearch(
-			query.literal.map(c => (c === "*" ? Wildcard : c)),
+			query.literal.map((c) => (c === "*" ? Wildcard : c)),
 			(index, data) => collector.push(data, index, index + data.length),
 			isCaseSensitive ? undefined : caseInsensitiveEquivalency,
 		);
@@ -175,7 +188,10 @@ export class RegexSearchRequest implements ISearchRequest {
 
 			// Cut off the start of the string either to meet the window requirements,
 			// or at the index of the last match -- whichever is greater.
-			const overflow = Math.max(str.length - regexSearchWindow, lastReIndex);
+			const overflow = Math.max(
+				str.length - regexSearchWindow,
+				lastReIndex,
+			);
 			if (overflow > 0) {
 				strStart += overflow;
 				re.lastIndex = 0;

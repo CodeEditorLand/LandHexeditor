@@ -14,12 +14,18 @@ export const accessFile = async (
 	untitledDocumentData?: Uint8Array,
 ): Promise<FileAccessor> => {
 	if (uri.scheme === "untitled") {
-		return new UntitledFileAccessor(uri, untitledDocumentData ?? new Uint8Array());
+		return new UntitledFileAccessor(
+			uri,
+			untitledDocumentData ?? new Uint8Array(),
+		);
 	}
 
 	if (uri.scheme === "vscode-debug-memory") {
 		const { permissions = 0 } = await vscode.workspace.fs.stat(uri);
-		return new DebugFileAccessor(uri, !!(permissions & vscode.FilePermission.Readonly));
+		return new DebugFileAccessor(
+			uri,
+			!!(permissions & vscode.FilePermission.Readonly),
+		);
 	}
 
 	// try to use native file access for local files to allow large files to be handled efficiently
@@ -54,7 +60,9 @@ export const accessFile = async (
 };
 
 class FileHandleContainer {
-	private borrowQueue: ((h: fs.promises.FileHandle | Error) => Promise<void>)[] = [];
+	private borrowQueue: ((
+		h: fs.promises.FileHandle | Error,
+	) => Promise<void>)[] = [];
 	private handle?: fs.promises.FileHandle;
 	private disposeTimeout?: NodeJS.Timeout;
 	private disposed = false;
@@ -72,7 +80,7 @@ class FileHandleContainer {
 		}
 
 		return new Promise<R>((resolve, reject) => {
-			this.borrowQueue.push(async handle => {
+			this.borrowQueue.push(async (handle) => {
 				if (handle instanceof Error) {
 					return reject(handle);
 				}
@@ -147,7 +155,7 @@ class FileHandleContainer {
 }
 
 const retryOnENOENT = retry(
-	handleWhen(e => (e as any).code === "ENOENT"),
+	handleWhen((e) => (e as any).code === "ENOENT"),
 	{
 		maxAttempts: 50,
 		backoff: new ConstantBackoff(50),
@@ -183,18 +191,23 @@ class NativeFileAccessor implements FileAccessor {
 	}
 
 	async getSize(): Promise<number | undefined> {
-		return this.handle.borrow(async fd => (await fd.stat()).size);
+		return this.handle.borrow(async (fd) => (await fd.stat()).size);
 	}
 
 	async read(offset: number, target: Uint8Array): Promise<number> {
-		return this.handle.borrow(async fd => {
-			const { bytesRead } = await fd.read(target, 0, target.byteLength, offset);
+		return this.handle.borrow(async (fd) => {
+			const { bytesRead } = await fd.read(
+				target,
+				0,
+				target.byteLength,
+				offset,
+			);
 			return bytesRead;
 		});
 	}
 
 	writeBulk(ops: readonly FileWriteOp[]): Promise<void> {
-		return this.handle.borrow<void>(async fd => {
+		return this.handle.borrow<void>(async (fd) => {
 			return Promise.all(
 				ops.map(({ data, offset }) => {
 					return fd.write(data, 0, data.byteLength, offset);
@@ -217,7 +230,9 @@ class NativeFileAccessor implements FileAccessor {
 		const tmpName = `${this.handle.path}.tmp`;
 		const tmp = await this.fs.promises.open(
 			tmpName,
-			this.fs.constants.O_WRONLY | this.fs.constants.O_CREAT | this.fs.constants.O_TRUNC,
+			this.fs.constants.O_WRONLY |
+				this.fs.constants.O_CREAT |
+				this.fs.constants.O_TRUNC,
 		);
 		try {
 			let offset = 0;
@@ -236,10 +251,12 @@ class NativeFileAccessor implements FileAccessor {
 		await this.handle.borrow(async () => {
 			await this.handle.close();
 			// Retry the rename a few times since the file might take a moment to show up on disk after operations flush.
-			await retryOnENOENT.execute(() => this.fs.promises.rename(tmpName, this.handle.path));
+			await retryOnENOENT.execute(() =>
+				this.fs.promises.rename(tmpName, this.handle.path),
+			);
 		});
 
-		return this.handle.borrow(async fd => {
+		return this.handle.borrow(async (fd) => {
 			if (cancellation?.isCancellationRequested) {
 				return;
 			}
@@ -271,7 +288,8 @@ class SimpleFileAccessor implements FileAccessor {
 	constructor(uri: vscode.Uri) {
 		this.uri = uri.toString();
 		this.fsPath = uri.fsPath;
-		this.isReadonly = vscode.workspace.fs.isWritableFileSystem(this.uri) === false;
+		this.isReadonly =
+			vscode.workspace.fs.isWritableFileSystem(this.uri) === false;
 	}
 
 	watch(onDidChange: () => void, onDidDelete: () => void): vscode.Disposable {
@@ -279,7 +297,8 @@ class SimpleFileAccessor implements FileAccessor {
 	}
 
 	async getSize(): Promise<number> {
-		return (await vscode.workspace.fs.stat(vscode.Uri.parse(this.uri))).size;
+		return (await vscode.workspace.fs.stat(vscode.Uri.parse(this.uri)))
+			.size;
 	}
 
 	async read(offset: number, data: Uint8Array): Promise<number> {
@@ -319,7 +338,10 @@ class SimpleFileAccessor implements FileAccessor {
 		for (const { data, offset } of ops) {
 			contents.set(data, offset);
 		}
-		return vscode.workspace.fs.writeFile(vscode.Uri.parse(this.uri), contents);
+		return vscode.workspace.fs.writeFile(
+			vscode.Uri.parse(this.uri),
+			contents,
+		);
 	}
 
 	public invalidate(): void {
@@ -331,7 +353,9 @@ class SimpleFileAccessor implements FileAccessor {
 	}
 
 	private getContents() {
-		this.contents ??= vscode.workspace.fs.readFile(vscode.Uri.parse(this.uri));
+		this.contents ??= vscode.workspace.fs.readFile(
+			vscode.Uri.parse(this.uri),
+		);
 		return this.contents;
 	}
 }
@@ -397,7 +421,7 @@ class DebugFileAccessor implements FileAccessor {
 
 	async writeBulk(ops: readonly FileWriteOp[]): Promise<void> {
 		await Promise.all(
-			ops.map(op =>
+			ops.map((op) =>
 				vscode.workspace.fs.writeFile(
 					this.referenceRange(op.offset, op.offset + op.data.length),
 					op.data,
@@ -407,7 +431,9 @@ class DebugFileAccessor implements FileAccessor {
 	}
 
 	private referenceRange(from: number, to: number) {
-		return vscode.Uri.parse(this.uri).with({ query: `?range=${from}:${to}` });
+		return vscode.Uri.parse(this.uri).with({
+			query: `?range=${from}:${to}`,
+		});
 	}
 
 	public invalidate(): void {
@@ -426,7 +452,10 @@ const watchWorkspaceFile = (
 ): vscode.Disposable => {
 	const base = uri.split("/");
 	const fileName = base.pop()!;
-	const pattern = new vscode.RelativePattern(vscode.Uri.parse(base.join("/")), fileName);
+	const pattern = new vscode.RelativePattern(
+		vscode.Uri.parse(base.join("/")),
+		fileName,
+	);
 
 	const watcher = vscode.workspace.createFileSystemWatcher(pattern);
 	const l1 = watcher.onDidChange(onDidChange);

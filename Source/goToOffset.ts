@@ -4,7 +4,9 @@ import { ExtensionHostMessageHandler, MessageType } from "../shared/protocol";
 const addressRe = /^0x[a-f0-9]+$/i;
 const decimalRe = /^[0-9]+$/i;
 
-export const showGoToOffset = (messaging: ExtensionHostMessageHandler): void => {
+export const showGoToOffset = (
+	messaging: ExtensionHostMessageHandler,
+): void => {
 	const input = vscode.window.createInputBox();
 	input.placeholder = "Enter offset to go to";
 
@@ -13,7 +15,7 @@ export const showGoToOffset = (messaging: ExtensionHostMessageHandler): void => 
 	let lastValue: number | undefined;
 	let accepted = false;
 
-	input.onDidChangeValue(value => {
+	input.onDidChangeValue((value) => {
 		if (!value) {
 			lastValue = undefined;
 		} else if (addressRe.test(value)) {
@@ -30,14 +32,20 @@ export const showGoToOffset = (messaging: ExtensionHostMessageHandler): void => 
 		input.validationMessage = "";
 		if (lastValue !== undefined) {
 			input.validationMessage = "";
-			messaging.sendEvent({ type: MessageType.GoToOffset, offset: lastValue });
+			messaging.sendEvent({
+				type: MessageType.GoToOffset,
+				offset: lastValue,
+			});
 		}
 	});
 
 	input.onDidAccept(() => {
 		accepted = true;
 		if (lastValue !== undefined) {
-			messaging.sendEvent({ type: MessageType.SetFocusedByte, offset: lastValue });
+			messaging.sendEvent({
+				type: MessageType.SetFocusedByte,
+				offset: lastValue,
+			});
 		}
 	});
 

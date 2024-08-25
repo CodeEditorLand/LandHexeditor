@@ -210,7 +210,7 @@
 	"dependencies": {
 		"@popperjs/core": "2.11.8",
 		"cockatiel": "3.2.1",
-		"diff": "5.2.0",
+		"diff": "6.0.0-beta",
 		"js-base64": "3.7.7",
 		"recoil": "0.7.7"
 	},
@@ -218,7 +218,7 @@
 	"devDependencies": {
 		"@types/chai": "4.3.17",
 		"@types/diff": "5.2.1",
-		"@types/node": "22.4.0",
+		"@types/node": "22.5.0",
 		"chai": "5.1.1",
 		"esbuild": "0.23.1",
 		"esbuild-css-modules-plugin": "3.1.2",

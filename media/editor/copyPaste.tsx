@@ -3,6 +3,7 @@
 
 import * as base64 from "js-base64";
 import React, { useCallback, useMemo, useState } from "react";
+
 import { MessageType, PasteMode } from "../../shared/protocol";
 import _style from "./copyPaste.css";
 import { useUniqueId } from "./hooks";
@@ -28,15 +29,16 @@ const encodingLabel: { [key in Encoding]: string } = {
 };
 
 const isData: { [key in Encoding]: (data: string) => boolean } = {
-	[Encoding.Base64]: d => base64.isValid(d),
+	[Encoding.Base64]: (d) => base64.isValid(d),
 	[Encoding.Utf8]: () => true,
 	[Encoding.Hex]: () => true,
 };
 
 const decode: { [key in Encoding]: (data: string) => Uint8Array } = {
-	[Encoding.Base64]: d => base64.toUint8Array(d),
-	[Encoding.Utf8]: d => new TextEncoder().encode(d),
-	[Encoding.Hex]: d => Uint8Array.from(d.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16))),
+	[Encoding.Base64]: (d) => base64.toUint8Array(d),
+	[Encoding.Utf8]: (d) => new TextEncoder().encode(d),
+	[Encoding.Hex]: (d) =>
+		Uint8Array.from(d.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16))),
 };
 
 const EncodingOption: React.FC<{
@@ -55,7 +57,7 @@ const EncodingOption: React.FC<{
 				disabled={!enabled}
 				value={value}
 				checked={checked}
-				onChange={evt => {
+				onChange={(evt) => {
 					if (evt.target.checked) {
 						onChecked(value);
 					}
@@ -81,7 +83,7 @@ const InsertionOption: React.FC<{
 				name="insertMode"
 				value={value}
 				checked={checked}
-				onChange={evt => {
+				onChange={(evt) => {
 					if (evt.target.checked) {
 						onChecked(value);
 					}
@@ -121,10 +123,13 @@ export const PastePopup: React.FC<{
 	}, [decoded, mode, hide, context?.offset]);
 
 	return (
-		<VsWidgetPopover anchor={context?.target || null} hide={hide} visible={!!context}>
+		<VsWidgetPopover
+			anchor={context?.target || null}
+			hide={hide}
+			visible={!!context}>
 			<div className={style.radioList}>
 				<span>{strings.pasteAs}:</span>
-				{encodings.map(e => (
+				{encodings.map((e) => (
 					<EncodingOption
 						key={e}
 						value={e}
@@ -153,8 +158,10 @@ export const PastePopup: React.FC<{
 				<VsButton disabled={!decodedValid} onClick={doReplace}>
 					{decodedValid ? (
 						<>
-							{mode === PasteMode.Replace ? strings.replace : strings.insert} {decoded.length}{" "}
-							{strings.bytes}
+							{mode === PasteMode.Replace
+								? strings.replace
+								: strings.insert}{" "}
+							{decoded.length} {strings.bytes}
 						</>
 					) : (
 						strings.encodingError

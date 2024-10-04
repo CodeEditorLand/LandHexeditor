@@ -1,9 +1,10 @@
 import { EventEmitter, IDisposable } from "cockatiel";
 import { createContext, useContext, useEffect, useState } from "react";
 import { SetterOrUpdater } from "recoil";
+
 import { HexDocumentEdit } from "../../shared/hexDocumentModel";
 import { MessageType } from "../../shared/protocol";
-import { Range, getRangeSelectionsFromStack } from "../../shared/util/range";
+import { getRangeSelectionsFromStack, Range } from "../../shared/util/range";
 import _style from "./dataDisplayContext.css";
 import { messageHandler, registerHandler } from "./state";
 import { throwOnUndefinedAccessInDev } from "./util";
@@ -43,16 +44,30 @@ export class DisplayContext {
 	private _hoveredByte?: FocusedElement;
 	private _focusedByte?: FocusedElement;
 	private _unsavedRanges: readonly Range[] = [];
-	private readonly unsavedRangesEmitter = new EventEmitter<readonly Range[]>();
+	private readonly unsavedRangesEmitter = new EventEmitter<
+		readonly Range[]
+	>();
 	private readonly selectionChangeEmitter = new EventEmitter<{
 		range: Range;
 		isSingleSwap: boolean;
 	}>();
-	private readonly hoverChangeEmitter = new EventEmitter<FocusedElement | undefined>();
-	private readonly hoverChangeHandlers = new Map<bigint, (isSelected: boolean) => void>();
-	private readonly focusChangeEmitter = new EventEmitter<FocusedElement | undefined>();
-	private readonly focusChangeHandlers = new Map<bigint, (isSelected: boolean) => void>();
-	private readonly focusChangeGenericHandler = new EventEmitter<number | undefined>();
+	private readonly hoverChangeEmitter = new EventEmitter<
+		FocusedElement | undefined
+	>();
+	private readonly hoverChangeHandlers = new Map<
+		bigint,
+		(isSelected: boolean) => void
+	>();
+	private readonly focusChangeEmitter = new EventEmitter<
+		FocusedElement | undefined
+	>();
+	private readonly focusChangeHandlers = new Map<
+		bigint,
+		(isSelected: boolean) => void
+	>();
+	private readonly focusChangeGenericHandler = new EventEmitter<
+		number | undefined
+	>();
 
 	/**
 	 * If the user is currently selecting data, the 'anchor' byte they started from.
@@ -76,7 +91,7 @@ export class DisplayContext {
 		forByte: number,
 		listener: (isSingleSwap: boolean) => void,
 	): IDisposable {
-		return this.selectionChangeEmitter.addListener(evt => {
+		return this.selectionChangeEmitter.addListener((evt) => {
 			if (evt.range.includes(forByte)) {
 				listener(evt.isSingleSwap);
 			}
@@ -90,10 +105,10 @@ export class DisplayContext {
 		forByte: number,
 		listener: (isEdited: boolean) => void,
 	): IDisposable {
-		let wasEdited = this._unsavedRanges.some(e => e.includes(forByte));
+		let wasEdited = this._unsavedRanges.some((e) => e.includes(forByte));
 
-		return this.unsavedRangesEmitter.addListener(ranges => {
-			const isEdited = ranges.some(r => r.includes(forByte));
+		return this.unsavedRangesEmitter.addListener((ranges) => {
+			const isEdited = ranges.some((r) => r.includes(forByte));
 			if (isEdited !== wasEdited) {
 				wasEdited = isEdited;
 				listener(isEdited);
@@ -109,7 +124,9 @@ export class DisplayContext {
 		listener: (isFocused: boolean) => void,
 	): IDisposable {
 		if (this.focusChangeHandlers.has(element.key)) {
-			throw new Error(`Duplicate focus change handler for byte ${element.byte}`);
+			throw new Error(
+				`Duplicate focus change handler for byte ${element.byte}`,
+			);
 		}
 
 		this.focusChangeHandlers.set(element.key, listener);
@@ -119,7 +136,8 @@ export class DisplayContext {
 	/**
 	 * Emitter that fires with the new focused byte.
 	 */
-	public readonly onDidChangeAnyFocus = this.focusChangeGenericHandler.addListener;
+	public readonly onDidChangeAnyFocus =
+		this.focusChangeGenericHandler.addListener;
 
 	/**
 	 * Emitter that fires when the given byte is hovered or unhovered.
@@ -129,7 +147,9 @@ export class DisplayContext {
 		listener: (isHovered: boolean) => void,
 	): IDisposable {
 		if (this.hoverChangeHandlers.has(element.key)) {
-			throw new Error(`Duplicate hover change handler for byte ${element.byte}`);
+			throw new Error(
+				`Duplicate hover change handler for byte ${element.byte}`,
+			);
 		}
 
 		this.hoverChangeHandlers.set(element.key, listener);
@@ -200,7 +220,9 @@ export class DisplayContext {
 
 		if (this._hoveredByte !== undefined) {
 			this.hoverChangeHandlers.get(this._hoveredByte.key)?.(false);
-			this.hoverChangeHandlers.get(this._hoveredByte.other().key)?.(false);
+			this.hoverChangeHandlers.get(this._hoveredByte.other().key)?.(
+				false,
+			);
 		}
 
 		this._hoveredByte = byte;
@@ -225,7 +247,7 @@ export class DisplayContext {
 		private readonly setEdits: SetterOrUpdater<readonly HexDocumentEdit[]>,
 		public readonly isReadonly: boolean,
 	) {
-		registerHandler(MessageType.SetFocusedByte, msg => {
+		registerHandler(MessageType.SetFocusedByte, (msg) => {
 			if (!document.hasFocus()) {
 				window.focus();
 			}
@@ -234,19 +256,21 @@ export class DisplayContext {
 			this.setSelectionRanges([Range.single(msg.offset)]);
 		});
 
-		registerHandler(MessageType.SetFocusedByteRange, msg => {
+		registerHandler(MessageType.SetFocusedByteRange, (msg) => {
 			if (!document.hasFocus()) {
 				window.focus();
 			}
 
 			this.focusedElement = new FocusedElement(false, msg.startingOffset);
-			this.setSelectionRanges([Range.inclusive(msg.startingOffset, msg.endingOffset)]);
+			this.setSelectionRanges([
+				Range.inclusive(msg.startingOffset, msg.endingOffset),
+			]);
 		});
 
-		registerHandler(MessageType.TriggerCopyAs, msg => {
+		registerHandler(MessageType.TriggerCopyAs, (msg) => {
 			messageHandler.sendEvent({
 				type: MessageType.DoCopy,
-				selections: this.selection.map(r => [r.start, r.end]),
+				selections: this.selection.map((r) => [r.start, r.end]),
 				format: msg.format,
 			});
 		});
@@ -265,7 +289,7 @@ export class DisplayContext {
 	 * Appends a new edit to the document.
 	 */
 	public edit(edits: HexDocumentEdit | readonly HexDocumentEdit[]): void {
-		this.setEdits(prev => prev.concat(edits));
+		this.setEdits((prev) => prev.concat(edits));
 	}
 
 	/**
@@ -321,7 +345,10 @@ export class DisplayContext {
 		}
 
 		this._selection = ranges;
-		this.selectionChangeEmitter.emit({ range: new Range(min, max + 1), isSingleSwap: false });
+		this.selectionChangeEmitter.emit({
+			range: new Range(min, max + 1),
+			isSingleSwap: false,
+		});
 	}
 
 	/**
@@ -350,7 +377,9 @@ export class DisplayContext {
 	}
 }
 
-export const DataDisplayContext = createContext<DisplayContext | undefined>(undefined);
+export const DataDisplayContext = createContext<DisplayContext | undefined>(
+	undefined,
+);
 
 export const useDisplayContext = (): DisplayContext => {
 	const ctx = useContext(DataDisplayContext);
@@ -369,9 +398,9 @@ export const useIsSelected = (byte: number): boolean => {
 	useEffect(() => {
 		setSelected(ctx.isSelected(byte));
 
-		const disposable = ctx.onDidChangeSelection(byte, isSingleSwap => {
+		const disposable = ctx.onDidChangeSelection(byte, (isSingleSwap) => {
 			if (isSingleSwap) {
-				setSelected(s => !s);
+				setSelected((s) => !s);
 			} else {
 				setSelected(ctx.isSelected(byte));
 			}
@@ -418,7 +447,7 @@ export const useIsUnsaved = (byte: number): boolean => {
 	const [unsaved, setIsUnsaved] = useState(false);
 
 	useEffect(() => {
-		setIsUnsaved(ctx.unsavedRanges.some(r => r.includes(byte)));
+		setIsUnsaved(ctx.unsavedRanges.some((r) => r.includes(byte)));
 		const disposable = ctx.onDidChangeUnsavedState(byte, setIsUnsaved);
 		return () => disposable.dispose();
 	}, [byte]);

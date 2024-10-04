@@ -3,7 +3,13 @@
 
 import React, { Suspense, useLayoutEffect, useMemo } from "react";
 import { render } from "react-dom";
-import { RecoilRoot, useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
+import {
+	RecoilRoot,
+	useRecoilState,
+	useRecoilValue,
+	useSetRecoilState,
+} from "recoil";
+
 import { InspectorLocation } from "../../shared/protocol";
 import { DataHeader } from "./dataDisplay";
 import { DataDisplayContext, DisplayContext } from "./dataDisplayContext";
@@ -53,14 +59,19 @@ const Editor: React.FC = () => {
 	const ctx = useMemo(() => new DisplayContext(setEdit, isReadonly), []);
 
 	const isLargeFile = useRecoilValue(select.isLargeFile);
-	const [bypassLargeFilePrompt, setBypassLargeFile] = useRecoilState(select.bypassLargeFilePrompt);
+	const [bypassLargeFilePrompt, setBypassLargeFile] = useRecoilState(
+		select.bypassLargeFilePrompt,
+	);
 
 	if (isLargeFile && !bypassLargeFilePrompt) {
 		return (
 			<div>
 				<p>
 					{strings.openLargeFileWarning}{" "}
-					<a id="open-anyway" role="button" onClick={() => setBypassLargeFile(true)}>
+					<a
+						id="open-anyway"
+						role="button"
+						onClick={() => setBypassLargeFile(true)}>
 						{strings.openAnyways}
 					</a>
 				</p>
@@ -72,14 +83,19 @@ const Editor: React.FC = () => {
 		<DataDisplayContext.Provider value={ctx}>
 			<div
 				className={style.container}
-				style={{ "--cell-size": `${dimensions.rowPxHeight}px` } as React.CSSProperties}
-			>
+				style={
+					{
+						"--cell-size": `${dimensions.rowPxHeight}px`,
+					} as React.CSSProperties
+				}>
 				<FindWidget />
 				<SettingsGear />
 				<DataHeader />
 				<ScrollContainer />
 				<ReadonlyWarning />
-				{inspectorLocation === InspectorLocation.Hover && <DataInspectorHover />}
+				{inspectorLocation === InspectorLocation.Hover && (
+					<DataInspectorHover />
+				)}
 			</div>
 		</DataDisplayContext.Provider>
 	);

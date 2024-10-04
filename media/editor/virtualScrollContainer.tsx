@@ -1,6 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
+
 import { useSize } from "./hooks";
-import { clamp, clsx, getScrollDimensions, throwOnUndefinedAccessInDev } from "./util";
+import {
+	clamp,
+	clsx,
+	getScrollDimensions,
+	throwOnUndefinedAccessInDev,
+} from "./util";
 import _style from "./virtualScrollContainer.css";
 
 const style = throwOnUndefinedAccessInDev(_style);
@@ -46,11 +52,17 @@ export const VirtualScrollContainer: React.FC<{
 		// We use transform rather than top/height here since it's cheaper to
 		// rerender. The height is the greatest of either the min handle height or
 		// the proportion of the total data that the current window is displaying.
-		handleHeight = Math.max(minHandleHeight, (size.height * size.height) / scrollHeight);
+		handleHeight = Math.max(
+			minHandleHeight,
+			(size.height * size.height) / scrollHeight,
+		);
 		// Likewise, the distance from the top is how far through the scrollHeight
 		// the current scrollTop is--adjusting for the handle height to keep it on screen.
 		handleTop =
-			Math.min(1, (scrollTop - scrollStart) / (scrollHeight - size.height)) *
+			Math.min(
+				1,
+				(scrollTop - scrollStart) / (scrollHeight - size.height),
+			) *
 			(size.height - handleHeight);
 		scrollStyle = {
 			opacity: 1,
@@ -69,7 +81,8 @@ export const VirtualScrollContainer: React.FC<{
 		// scrollTop where handleTop = `pageY - offset - size.top`.
 		const newScrollTop =
 			scrollStart +
-			((pageY - offset - size.top) / (size.height - handleHeight)) * (scrollHeight - size.height);
+			((pageY - offset - size.top) / (size.height - handleHeight)) *
+				(scrollHeight - size.height);
 		onScroll(clampScroll(newScrollTop));
 	};
 
@@ -100,7 +113,7 @@ export const VirtualScrollContainer: React.FC<{
 		// Start scrolling and set the offset to by the middle of the scrollbar.
 		// Start dragging if we aren't already.
 		onScrollWithOffset(evt.pageY, handleHeight / 2);
-		setDrag(d => d || { startY: evt.pageY, offset: handleHeight / 2 });
+		setDrag((d) => d || { startY: evt.pageY, offset: handleHeight / 2 });
 		evt.preventDefault();
 	};
 
@@ -142,10 +155,12 @@ export const VirtualScrollContainer: React.FC<{
 					pointerEvents: visible ? "auto" : "none",
 					width: getScrollDimensions().width,
 				}}
-				className={clsx(style.scrollbarContainer, drag && style.dragging)}
+				className={clsx(
+					style.scrollbarContainer,
+					drag && style.dragging,
+				)}
 				ref={wrapperRef}
-				onMouseDown={onBarMouseDown}
-			>
+				onMouseDown={onBarMouseDown}>
 				<div
 					className={style.handle}
 					role="scrollbar"

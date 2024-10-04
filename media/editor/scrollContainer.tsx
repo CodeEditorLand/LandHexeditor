@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
+
 import { Range } from "../../shared/util/range";
 import { DataDisplay } from "./dataDisplay";
 import _style from "./scrollContainer.css";
@@ -33,11 +34,23 @@ export const ScrollContainer: React.FC = () => {
 
 			// Expand the scroll bounds if the new position is too close to the
 			// start or end of the selection, based on the loadThreshold.
-			setBounds(old => {
-				if (newOffset - old.start < windowSize * loadThreshold && old.start > 0) {
-					return new Range(Math.max(0, old.start - windowSize), old.end);
-				} else if (old.end - newOffset < windowSize * (1 + loadThreshold)) {
-					return new Range(old.start, Math.min(fileSize ?? Infinity, old.end + windowSize));
+			setBounds((old) => {
+				if (
+					newOffset - old.start < windowSize * loadThreshold &&
+					old.start > 0
+				) {
+					return new Range(
+						Math.max(0, old.start - windowSize),
+						old.end,
+					);
+				} else if (
+					old.end - newOffset <
+					windowSize * (1 + loadThreshold)
+				) {
+					return new Range(
+						old.start,
+						Math.min(fileSize ?? Infinity, old.end + windowSize),
+					);
 				} else {
 					return old;
 				}
@@ -64,7 +77,8 @@ export const ScrollContainer: React.FC = () => {
 			// On scroll, figure out the offset displayed at the new position.
 			scrollTop += accumulatedScroll.current;
 			const rowNumber = Math.floor(scrollTop / dimension.rowPxHeight);
-			accumulatedScroll.current = scrollTop - rowNumber * dimension.rowPxHeight;
+			accumulatedScroll.current =
+				scrollTop - rowNumber * dimension.rowPxHeight;
 			const newOffset = rowNumber * columnWidth;
 			const newScrollTop = rowNumber * dimension.rowPxHeight;
 			previousOffset.current = newOffset;
@@ -82,9 +96,12 @@ export const ScrollContainer: React.FC = () => {
 			className={style.wrapper}
 			scrollTop={scrollTop}
 			scrollStart={dimension.rowPxHeight * (bounds.start / columnWidth)}
-			scrollEnd={dimension.rowPxHeight * (Math.ceil(bounds.end / columnWidth) + 1) + extraScroll}
-			onScroll={onScroll}
-		>
+			scrollEnd={
+				dimension.rowPxHeight *
+					(Math.ceil(bounds.end / columnWidth) + 1) +
+				extraScroll
+			}
+			onScroll={onScroll}>
 			<DataDisplay />
 		</VirtualScrollContainer>
 	);

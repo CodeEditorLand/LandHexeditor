@@ -11,7 +11,11 @@ import Replace from "@vscode/codicons/src/icons/replace.svg";
 import SearchStop from "@vscode/codicons/src/icons/search-stop.svg";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
-import { HexDocumentEditOp, HexDocumentReplaceEdit } from "../../shared/hexDocumentModel";
+
+import {
+	HexDocumentEditOp,
+	HexDocumentReplaceEdit,
+} from "../../shared/hexDocumentModel";
 import {
 	LiteralSearchQuery,
 	MessageType,
@@ -21,13 +25,28 @@ import {
 } from "../../shared/protocol";
 import { placeholder1 } from "../../shared/strings";
 import { Range } from "../../shared/util/range";
-import { FocusedElement, dataCellCls, useDisplayContext } from "./dataDisplayContext";
+import {
+	dataCellCls,
+	FocusedElement,
+	useDisplayContext,
+} from "./dataDisplayContext";
 import _style from "./findWidget.css";
 import { usePersistedState } from "./hooks";
 import * as select from "./state";
 import { strings } from "./strings";
-import { clsx, hexDecode, isHexString, parseHexDigit, throwOnUndefinedAccessInDev } from "./util";
-import { VsIconButton, VsIconCheckbox, VsProgressIndicator, VsTextFieldGroup } from "./vscodeUi";
+import {
+	clsx,
+	hexDecode,
+	isHexString,
+	parseHexDigit,
+	throwOnUndefinedAccessInDev,
+} from "./util";
+import {
+	VsIconButton,
+	VsIconCheckbox,
+	VsProgressIndicator,
+	VsTextFieldGroup,
+} from "./vscodeUi";
 
 const style = throwOnUndefinedAccessInDev(_style);
 
@@ -35,14 +54,18 @@ const queryDebounce = 200;
 
 const defaultResultCap = 10_000;
 
-const resultCountFormat = new Intl.NumberFormat(undefined, { notation: "compact" });
+const resultCountFormat = new Intl.NumberFormat(undefined, {
+	notation: "compact",
+});
 const selectedFormat = new Intl.NumberFormat();
 
 /**
  * Parses a query like "AABB??DD" into a query looking for
  * `[[170, 187], "*", [221]]`.
  */
-const parseHexStringWithPlaceholders = (str: string): LiteralSearchQuery | undefined => {
+const parseHexStringWithPlaceholders = (
+	str: string,
+): LiteralSearchQuery | undefined => {
 	const value = new Uint8Array(Math.ceil(str.length / 2));
 	let valueStart = 0;
 	let valueEnd = 0;
@@ -89,7 +112,10 @@ const getSearchQueryOrError = (
 	isRegexp: boolean,
 ): SearchRequestMessage["query"] | string => {
 	if (isBinaryMode) {
-		return parseHexStringWithPlaceholders(query) || strings.onlyHexCharsAndPlaceholders;
+		return (
+			parseHexStringWithPlaceholders(query) ||
+			strings.onlyHexCharsAndPlaceholders
+		);
 	}
 
 	if (isRegexp) {
@@ -116,12 +142,21 @@ const searchResultToEdit =
 
 export const FindWidget: React.FC = () => {
 	const [visible, setVisible] = usePersistedState("find.visible", false);
-	const [replaceVisible, setReplaceVisible] = usePersistedState("find.replacevisible", false);
+	const [replaceVisible, setReplaceVisible] = usePersistedState(
+		"find.replacevisible",
+		false,
+	);
 	const [query, setQuery] = usePersistedState("find.query", "");
 	const [replace, setReplace] = usePersistedState("find.replace", "");
-	const [isBinaryMode, setIsBinaryMode] = usePersistedState("find.isBinaryMode", false);
+	const [isBinaryMode, setIsBinaryMode] = usePersistedState(
+		"find.isBinaryMode",
+		false,
+	);
 	const [isRegexp, setIsRegexp] = usePersistedState("find.isRegexp", false);
-	const [isCaseSensitive, setIsCaseSensitive] = usePersistedState("find.isCaseSensitive", false);
+	const [isCaseSensitive, setIsCaseSensitive] = usePersistedState(
+		"find.isCaseSensitive",
+		false,
+	);
 	const [results, setResults] = useRecoilState(select.searchResults);
 	const [selectedResult, setSelectedResult] = useState<number>();
 	const [offset, setOffset] = useRecoilState(select.offset);
@@ -153,12 +188,16 @@ export const FindWidget: React.FC = () => {
 	);
 
 	const onReplaceChange = useCallback(
-		(evt: React.ChangeEvent<HTMLInputElement>) => setReplace(evt.target.value),
+		(evt: React.ChangeEvent<HTMLInputElement>) =>
+			setReplace(evt.target.value),
 		[isBinaryMode],
 	);
 
 	const stopSearch = useCallback(
-		() => select.messageHandler.sendRequest({ type: MessageType.CancelSearch }),
+		() =>
+			select.messageHandler.sendRequest({
+				type: MessageType.CancelSearch,
+			}),
 		[],
 	);
 
@@ -199,7 +238,9 @@ export const FindWidget: React.FC = () => {
 
 		return () => {
 			if (started) {
-				select.messageHandler.sendRequest({ type: MessageType.CancelSearch });
+				select.messageHandler.sendRequest({
+					type: MessageType.CancelSearch,
+				});
 			} else {
 				clearTimeout(timeout);
 			}
@@ -216,7 +257,10 @@ export const FindWidget: React.FC = () => {
 
 	const closeWidget = () => {
 		const prev = previouslyFocusedElement.current;
-		if (prev !== undefined && select.isByteVisible(dimensions, columnWidth, offset, prev.byte)) {
+		if (
+			prev !== undefined &&
+			select.isByteVisible(dimensions, columnWidth, offset, prev.byte)
+		) {
 			ctx.focusedElement = prev;
 		} else {
 			document.querySelector<HTMLElement>(`.${dataCellCls}`)?.focus();
@@ -237,7 +281,9 @@ export const FindWidget: React.FC = () => {
 				// no-op, enter in text area
 			} else if (e.altKey && results.results.length) {
 				e.preventDefault();
-				ctx.setSelectionRanges(results.results.map(r => new Range(r.from, r.to)));
+				ctx.setSelectionRanges(
+					results.results.map((r) => new Range(r.from, r.to)),
+				);
 			} else {
 				e.preventDefault();
 				navigateResults(1);
@@ -265,7 +311,9 @@ export const FindWidget: React.FC = () => {
 		} else {
 			// if there was no previous selected result, pick the next result on the
 			// screen. If the user navigated backwards, then pick the one right before.
-			next = results.results.findIndex(r => r.from > offset) + Math.min(increment, 0);
+			next =
+				results.results.findIndex((r) => r.from > offset) +
+				Math.min(increment, 0);
 		}
 
 		if (next < 0) {
@@ -286,7 +334,9 @@ export const FindWidget: React.FC = () => {
 				Math.max(
 					0,
 					select.startOfRowContainingByte(
-						r.to - select.getDisplayedBytes(dimensions, columnWidth) / 3,
+						r.to -
+							select.getDisplayedBytes(dimensions, columnWidth) /
+								3,
 						columnWidth,
 					),
 				),
@@ -295,7 +345,10 @@ export const FindWidget: React.FC = () => {
 	};
 
 	const replaceSelected = () => {
-		if (selectedResult === undefined || typeof replaceOrError === "string") {
+		if (
+			selectedResult === undefined ||
+			typeof replaceOrError === "string"
+		) {
 			return;
 		}
 
@@ -305,17 +358,21 @@ export const FindWidget: React.FC = () => {
 		ctx.edit(edit);
 
 		// Remove the result we replaced, and shift their ranges if necessary
-		let nextResults = results.results.filter(r => r !== selected);
+		let nextResults = results.results.filter((r) => r !== selected);
 		const delta = edit.value.length - edit.previous.length;
 		if (delta !== 0) {
-			nextResults = nextResults.map(r =>
+			nextResults = nextResults.map((r) =>
 				r.from > selected.from
-					? { from: r.from + delta, to: r.to + delta, previous: r.previous }
+					? {
+							from: r.from + delta,
+							to: r.to + delta,
+							previous: r.previous,
+						}
 					: r,
 			);
 		}
 
-		setResults(results => ({ ...results, results: nextResults }));
+		setResults((results) => ({ ...results, results: nextResults }));
 
 		// show the next result. Don't actually need to call `setSelectedResult` since
 		// the index is the same now that we removed the replaced result.
@@ -327,28 +384,32 @@ export const FindWidget: React.FC = () => {
 	const replaceAll = () => {
 		if (typeof replaceOrError !== "string") {
 			ctx.edit(
-				results.results.map(searchResultToEdit(replaceOrError)).sort((a, b) => b.offset - a.offset),
+				results.results
+					.map(searchResultToEdit(replaceOrError))
+					.sort((a, b) => b.offset - a.offset),
 			);
-			safeReplacedEditsLen.current = edits.length + results.results.length;
+			safeReplacedEditsLen.current =
+				edits.length + results.results.length;
 			setResults({ progress: 1, results: [] });
 			setSelectedResult(undefined);
 		}
 	};
 
-	const toggleFindReplace = useCallback(() => setReplaceVisible(v => !v), []);
+	const toggleFindReplace = useCallback(
+		() => setReplaceVisible((v) => !v),
+		[],
+	);
 
 	return (
 		<div
 			tabIndex={visible ? undefined : -1}
-			className={clsx(style.wrapper, visible && style.visible)}
-		>
+			className={clsx(style.wrapper, visible && style.visible)}>
 			{results.progress < 1 && <VsProgressIndicator />}
 			{!ctx.isReadonly && (
 				<VsIconButton
 					title="Toggle Replace"
 					onClick={toggleFindReplace}
-					className={style.replaceToggle}
-				>
+					className={style.replaceToggle}>
 					{replaceVisible ? <ChevronDown /> : <ChevronRight />}
 				</VsIconButton>
 			)}
@@ -358,29 +419,35 @@ export const FindWidget: React.FC = () => {
 						buttons={3}
 						ref={textFieldRef}
 						outerClassName={style.textField}
-						placeholder={isBinaryMode ? strings.findBytes : strings.findText}
+						placeholder={
+							isBinaryMode ? strings.findBytes : strings.findText
+						}
 						value={query}
 						onChange={onQueryChange}
 						onKeyDown={onFindKeyDown}
-						error={typeof queryOrError === "string" ? queryOrError : undefined}
-					>
+						error={
+							typeof queryOrError === "string"
+								? queryOrError
+								: undefined
+						}>
 						{!isBinaryMode && (
-							<VsIconCheckbox checked={isRegexp} onToggle={setIsRegexp} title={strings.regexSearch}>
+							<VsIconCheckbox
+								checked={isRegexp}
+								onToggle={setIsRegexp}
+								title={strings.regexSearch}>
 								<RegexIcon />
 							</VsIconCheckbox>
 						)}
 						<VsIconCheckbox
 							checked={isBinaryMode}
 							onToggle={setIsBinaryMode}
-							title={strings.searchInBinaryMode}
-						>
+							title={strings.searchInBinaryMode}>
 							<BinaryFile />
 						</VsIconCheckbox>
 						<VsIconCheckbox
 							checked={isCaseSensitive}
 							onToggle={setIsCaseSensitive}
-							title={strings.caseSensitive}
-						>
+							title={strings.caseSensitive}>
 							<CaseSensitive />
 						</VsIconCheckbox>
 					</VsTextFieldGroup>
@@ -392,25 +459,24 @@ export const FindWidget: React.FC = () => {
 					<VsIconButton
 						title={strings.cancelSearch}
 						disabled={results.progress === 1}
-						onClick={stopSearch}
-					>
+						onClick={stopSearch}>
 						<SearchStop />
 					</VsIconButton>
 					<VsIconButton
 						disabled={results.results.length === 0}
 						onClick={() => navigateResults(-1)}
-						title={strings.previousMatch}
-					>
+						title={strings.previousMatch}>
 						<ArrowUp />
 					</VsIconButton>
 					<VsIconButton
 						disabled={results.results.length === 0}
 						onClick={() => navigateResults(1)}
-						title={strings.nextMatch}
-					>
+						title={strings.nextMatch}>
 						<ArrowDown />
 					</VsIconButton>
-					<VsIconButton title={strings.closeWidget} onClick={closeWidget}>
+					<VsIconButton
+						title={strings.closeWidget}
+						onClick={closeWidget}>
 						<Close />
 					</VsIconButton>
 				</div>
@@ -423,13 +489,19 @@ export const FindWidget: React.FC = () => {
 							onChange={onReplaceChange}
 							onKeyDown={onReplaceKeyDown}
 							placeholder={strings.replace}
-							error={typeof replaceOrError === "string" ? replaceOrError : undefined}
+							error={
+								typeof replaceOrError === "string"
+									? replaceOrError
+									: undefined
+							}
 						/>
 						<VsIconButton
-							disabled={typeof replaceOrError === "string" || selectedResult === undefined}
+							disabled={
+								typeof replaceOrError === "string" ||
+								selectedResult === undefined
+							}
 							onClick={replaceSelected}
-							title={strings.replaceSelectedMatch}
-						>
+							title={strings.replaceSelectedMatch}>
 							<Replace />
 						</VsIconButton>
 						<VsIconButton
@@ -439,8 +511,7 @@ export const FindWidget: React.FC = () => {
 								!results.results.length
 							}
 							onClick={replaceAll}
-							title={strings.replaceAllMatches}
-						>
+							title={strings.replaceAllMatches}>
 							<ReplaceAll />
 						</VsIconButton>
 					</div>
@@ -459,13 +530,19 @@ const ResultBadge: React.FC<{
 	const resultCountComponent = results.capped ? (
 		<a
 			role="button"
-			title={strings.resultOverflow.replace(placeholder1, results.results.length.toString())}
-			onClick={onUncap}
-		>
+			title={strings.resultOverflow.replace(
+				placeholder1,
+				results.results.length.toString(),
+			)}
+			onClick={onUncap}>
 			{resultCountStr}+
 		</a>
 	) : (
-		<span title={strings.resultCount.replace(placeholder1, results.results.length.toString())}>
+		<span
+			title={strings.resultCount.replace(
+				placeholder1,
+				results.results.length.toString(),
+			)}>
 			{resultCountStr}
 		</span>
 	);
@@ -478,7 +555,8 @@ const ResultBadge: React.FC<{
 				strings.noResults
 			) : selectedResult !== undefined ? (
 				<>
-					{selectedFormat.format(selectedResult + 1)} of {resultCountComponent}
+					{selectedFormat.format(selectedResult + 1)} of{" "}
+					{resultCountComponent}
 				</>
 			) : (
 				<>{resultCountComponent} results</>

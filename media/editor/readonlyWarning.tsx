@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect } from "react";
 import { useRecoilState } from "recoil";
+
 import * as select from "./state";
 import { strings } from "./strings";
 import { VsTooltipPopover } from "./vscodeUi";

@@ -1,7 +1,12 @@
 import React, { Suspense, useEffect, useMemo, useState } from "react";
 import { useRecoilValue } from "recoil";
+
 import { Endianness } from "../../shared/protocol";
-import { FocusedElement, getDataCellElement, useDisplayContext } from "./dataDisplayContext";
+import {
+	FocusedElement,
+	getDataCellElement,
+	useDisplayContext,
+} from "./dataDisplayContext";
 import _style from "./dataInspector.css";
 import { inspectableTypes } from "./dataInspectorProperties";
 import { useFileBytes, usePersistedState } from "./hooks";
@@ -16,12 +21,15 @@ const style = throwOnUndefinedAccessInDev(_style);
 export const DataInspectorHover: React.FC = () => {
 	const ctx = useDisplayContext();
 	const [inspected, setInspected] = useState<FocusedElement>();
-	const anchor = useMemo(() => inspected && getDataCellElement(inspected), [inspected]);
+	const anchor = useMemo(
+		() => inspected && getDataCellElement(inspected),
+		[inspected],
+	);
 
 	useEffect(() => {
 		let hoverTimeout: NodeJS.Timeout | undefined;
 
-		const disposable = ctx.onDidHover(target => {
+		const disposable = ctx.onDidHover((target) => {
 			if (hoverTimeout) {
 				clearTimeout(hoverTimeout);
 				hoverTimeout = undefined;
@@ -40,7 +48,10 @@ export const DataInspectorHover: React.FC = () => {
 	}
 
 	return (
-		<VsTooltipPopover anchor={anchor} hide={() => setInspected(undefined)} visible={true}>
+		<VsTooltipPopover
+			anchor={anchor}
+			hide={() => setInspected(undefined)}
+			visible={true}>
 			<Suspense fallback={strings.loadingDotDotDot}>
 				<InspectorContents columns={4} offset={inspected.byte} />
 			</Suspense>
@@ -49,14 +60,16 @@ export const DataInspectorHover: React.FC = () => {
 };
 
 /** Data inspector view shown to the right hand side of the hex editor. */
-export const DataInspectorAside: React.FC<{ onInspecting?(isInspecting: boolean): void }> = ({
-	onInspecting,
-}) => {
+export const DataInspectorAside: React.FC<{
+	onInspecting?(isInspecting: boolean): void;
+}> = ({ onInspecting }) => {
 	const ctx = useDisplayContext();
-	const [inspected, setInspected] = useState<FocusedElement | undefined>(ctx.focusedElement);
+	const [inspected, setInspected] = useState<FocusedElement | undefined>(
+		ctx.focusedElement,
+	);
 
 	useEffect(() => {
-		const disposable = ctx.onDidFocus(focused => {
+		const disposable = ctx.onDidFocus((focused) => {
 			if (!inspected) {
 				onInspecting?.(true);
 			}
@@ -85,21 +98,30 @@ const InspectorContents: React.FC<{
 	offset: number;
 	columns: number;
 }> = ({ offset, columns }) => {
-	const defaultEndianness = useRecoilValue(select.editorSettings).defaultEndianness;
-	const [endianness, setEndianness] = usePersistedState("endianness", defaultEndianness);
+	const defaultEndianness = useRecoilValue(
+		select.editorSettings,
+	).defaultEndianness;
+	const [endianness, setEndianness] = usePersistedState(
+		"endianness",
+		defaultEndianness,
+	);
 	const target = useFileBytes(offset, lookahead);
 	const dv = new DataView(target.buffer);
 	const le = endianness === Endianness.Little;
 
 	return (
 		<>
-			<dl className={style.types} style={{ gridTemplateColumns: "max-content ".repeat(columns) }}>
+			<dl
+				className={style.types}
+				style={{ gridTemplateColumns: "max-content ".repeat(columns) }}>
 				{inspectableTypes.map(({ label, convert, minBytes }) => (
 					<React.Fragment key={label}>
 						<dt>{label}</dt>
 						<dd>
 							{target.length < minBytes ? (
-								<span style={{ opacity: 0.8 }}>End of File</span>
+								<span style={{ opacity: 0.8 }}>
+									End of File
+								</span>
 							) : (
 								convert(dv, le)
 							)}
@@ -107,7 +129,10 @@ const InspectorContents: React.FC<{
 					</React.Fragment>
 				))}
 			</dl>
-			<EndiannessToggle endianness={endianness} setEndianness={setEndianness} />
+			<EndiannessToggle
+				endianness={endianness}
+				setEndianness={setEndianness}
+			/>
 		</>
 	);
 };
@@ -122,7 +147,11 @@ const EndiannessToggle: React.FC<{
 			type="checkbox"
 			id="endian-checkbox"
 			checked={endianness === Endianness.Little}
-			onChange={evt => setEndianness(evt.target.checked ? Endianness.Little : Endianness.Big)}
+			onChange={(evt) =>
+				setEndianness(
+					evt.target.checked ? Endianness.Little : Endianness.Big,
+				)
+			}
 		/>
 		<label htmlFor="endian-checkbox">{strings.littleEndian}</label>
 	</div>

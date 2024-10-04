@@ -1,6 +1,7 @@
 import SettingsGearIcon from "@vscode/codicons/src/icons/settings-gear.svg";
 import React, { useState } from "react";
 import { useRecoilState } from "recoil";
+
 import _style from "./settings.css";
 import * as select from "./state";
 import { strings } from "./strings";
@@ -19,11 +20,13 @@ export const SettingsGear: React.FC = () => {
 				title={strings.openSettings}
 				className={style.gear}
 				onClick={() => setIsOpen(!isOpen)}
-				ref={setAnchor}
-			>
+				ref={setAnchor}>
 				<SettingsGearIcon />
 			</VsIconButton>
-			<VsWidgetPopover anchor={anchor} hide={() => setIsOpen(false)} visible={isOpen}>
+			<VsWidgetPopover
+				anchor={anchor}
+				hide={() => setIsOpen(false)}
+				visible={isOpen}>
 				<SettingsContent />
 			</VsWidgetPopover>
 		</>
@@ -47,7 +50,12 @@ const TextCheckbox: React.FC = () => {
 				type="checkbox"
 				id="text-checkbox"
 				checked={settings.showDecodedText}
-				onChange={evt => updateSettings(s => ({ ...s, showDecodedText: evt.target.checked }))}
+				onChange={(evt) =>
+					updateSettings((s) => ({
+						...s,
+						showDecodedText: evt.target.checked,
+					}))
+				}
 			/>
 		</>
 	);
@@ -57,8 +65,10 @@ const ColumnWidth: React.FC = () => {
 	const [settings, updateSettings] = useRecoilState(select.editorSettings);
 
 	const updateColumnWidth = (evt: React.ChangeEvent<HTMLInputElement>) => {
-		updateSettings(s => {
-			const colWidth = isNaN(evt.target.valueAsNumber) ? 1 : Math.max(evt.target.valueAsNumber, 1);
+		updateSettings((s) => {
+			const colWidth = isNaN(evt.target.valueAsNumber)
+				? 1
+				: Math.max(evt.target.valueAsNumber, 1);
 			const newSetting = { ...s, columnWidth: Math.min(colWidth, 32) };
 			return newSetting;
 		});

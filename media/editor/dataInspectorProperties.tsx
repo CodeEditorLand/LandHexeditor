@@ -2,8 +2,12 @@
 const getGUID = (arrayBuffer: ArrayBuffer, le: boolean) => {
 	const buf = new Uint8Array(arrayBuffer);
 
-	const indices = le ? [3, 2, 1, 0, 5, 4, 7, 6, 8, 9, 10, 11, 12, 13, 14, 15] : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
-	const parts = indices.map(index => buf[index].toString(16).padStart(2, "0").toUpperCase());
+	const indices = le
+		? [3, 2, 1, 0, 5, 4, 7, 6, 8, 9, 10, 11, 12, 13, 14, 15]
+		: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+	const parts = indices.map((index) =>
+		buf[index].toString(16).padStart(2, "0").toUpperCase(),
+	);
 	const guid = `{${parts[0]}${parts[1]}${parts[2]}${parts[3]}-${parts[4]}${parts[5]}-${parts[6]}${parts[7]}-${parts[8]}${parts[9]}-${parts[10]}${parts[11]}${parts[12]}${parts[13]}${parts[14]}${parts[15]}}`;
 
 	return guid;
@@ -21,7 +25,7 @@ const getULEB128 = (arrayBuffer: ArrayBuffer) => {
 			return "";
 		}
 		const byte: bigint = BigInt(buf[index++]);
-		result |= (byte & 0x7Fn) << shift;
+		result |= (byte & 0x7fn) << shift;
 		if ((0x80n & byte) === 0n) {
 			return result;
 		}
@@ -41,11 +45,11 @@ const getSLEB128 = (arrayBuffer: ArrayBuffer) => {
 			return "";
 		}
 		const byte: bigint = BigInt(buf[index++]);
-		result |= (byte & 0x7Fn) << shift;
-		shift += 7n; 
+		result |= (byte & 0x7fn) << shift;
+		shift += 7n;
 		if ((0x80n & byte) === 0n) {
 			if (shift < 128n && (byte & 0x40n) !== 0n) {
-				result |= (~0n << shift);
+				result |= ~0n << shift;
 				return result;
 			}
 			return result;
@@ -56,7 +60,9 @@ const getSLEB128 = (arrayBuffer: ArrayBuffer) => {
 /** Reads a uint24 at offset 0 from the buffer. */
 const getUint24 = (arrayBuffer: ArrayBuffer, le: boolean) => {
 	const buf = new Uint8Array(arrayBuffer);
-	return le ? buf[0] | (buf[1] << 8) | (buf[2] << 16) : (buf[0] << 16) | (buf[1] << 8) | buf[2];
+	return le
+		? buf[0] | (buf[1] << 8) | (buf[2] << 16)
+		: (buf[0] << 16) | (buf[1] << 8) | buf[2];
 };
 
 const getFloat16 = (exponentWidth: number, significandPrecision: number) => {
@@ -80,7 +86,9 @@ const getFloat16 = (exponentWidth: number, significandPrecision: number) => {
 			return f ? NaN : sign * Infinity;
 		}
 
-		return sign * 2 ** (e - exponentBias) * (1 + f / 2 ** significandPrecision);
+		return (
+			sign * 2 ** (e - exponentBias) * (1 + f / 2 ** significandPrecision)
+		);
 	};
 };
 
@@ -94,17 +102,37 @@ export interface IInspectableType {
 }
 
 const inspectTypesBuilder: IInspectableType[] = [
-	{ label: "binary", minBytes: 1, convert: dv => dv.getUint8(0).toString(2).padStart(8, "0") },
+	{
+		label: "binary",
+		minBytes: 1,
+		convert: (dv) => dv.getUint8(0).toString(2).padStart(8, "0"),
+	},
 
-	{ label: "octal", minBytes: 1, convert: dv => dv.getUint8(0).toString(8).padStart(3, "0") },
+	{
+		label: "octal",
+		minBytes: 1,
+		convert: (dv) => dv.getUint8(0).toString(8).padStart(3, "0"),
+	},
 
-	{ label: "uint8", minBytes: 1, convert: dv => dv.getUint8(0).toString() },
-	{ label: "int8", minBytes: 1, convert: dv => dv.getInt8(0).toString() },
+	{ label: "uint8", minBytes: 1, convert: (dv) => dv.getUint8(0).toString() },
+	{ label: "int8", minBytes: 1, convert: (dv) => dv.getInt8(0).toString() },
 
-	{ label: "uint16", minBytes: 2, convert: (dv, le) => dv.getUint16(0, le).toString() },
-	{ label: "int16", minBytes: 2, convert: (dv, le) => dv.getInt16(0, le).toString() },
+	{
+		label: "uint16",
+		minBytes: 2,
+		convert: (dv, le) => dv.getUint16(0, le).toString(),
+	},
+	{
+		label: "int16",
+		minBytes: 2,
+		convert: (dv, le) => dv.getInt16(0, le).toString(),
+	},
 
-	{ label: "uint24", minBytes: 3, convert: (dv, le) => getUint24(dv.buffer, le).toString() },
+	{
+		label: "uint24",
+		minBytes: 3,
+		convert: (dv, le) => getUint24(dv.buffer, le).toString(),
+	},
 	{
 		label: "int24",
 		minBytes: 3,
@@ -115,14 +143,38 @@ const inspectTypesBuilder: IInspectableType[] = [
 		},
 	},
 
-	{ label: "uint32", minBytes: 4, convert: (dv, le) => dv.getUint32(0, le).toString() },
-	{ label: "int32", minBytes: 4, convert: (dv, le) => dv.getInt32(0, le).toString() },
+	{
+		label: "uint32",
+		minBytes: 4,
+		convert: (dv, le) => dv.getUint32(0, le).toString(),
+	},
+	{
+		label: "int32",
+		minBytes: 4,
+		convert: (dv, le) => dv.getInt32(0, le).toString(),
+	},
 
-	{ label: "uint64", minBytes: 8, convert: (dv, le) => dv.getBigUint64(0, le).toString() },
-	{ label: "int64", minBytes: 8, convert: (dv, le) => dv.getBigInt64(0, le).toString() },
+	{
+		label: "uint64",
+		minBytes: 8,
+		convert: (dv, le) => dv.getBigUint64(0, le).toString(),
+	},
+	{
+		label: "int64",
+		minBytes: 8,
+		convert: (dv, le) => dv.getBigInt64(0, le).toString(),
+	},
 
-	{ label: "ULEB128", minBytes: 1, convert: dv => getULEB128(dv.buffer).toString() },
-	{ label: "SLEB128", minBytes: 1, convert: dv => getSLEB128(dv.buffer).toString() },
+	{
+		label: "ULEB128",
+		minBytes: 1,
+		convert: (dv) => getULEB128(dv.buffer).toString(),
+	},
+	{
+		label: "SLEB128",
+		minBytes: 1,
+		convert: (dv) => getSLEB128(dv.buffer).toString(),
+	},
 
 	{
 		label: "float16",
@@ -135,10 +187,22 @@ const inspectTypesBuilder: IInspectableType[] = [
 		convert: (dv, le) => getFloat16(8, 7)(dv.buffer, le).toString(),
 	},
 
-	{ label: "float32", minBytes: 4, convert: (dv, le) => dv.getFloat32(0, le).toString() },
-	{ label: "float64", minBytes: 8, convert: (dv, le) => dv.getFloat64(0, le).toString() },
+	{
+		label: "float32",
+		minBytes: 4,
+		convert: (dv, le) => dv.getFloat32(0, le).toString(),
+	},
+	{
+		label: "float64",
+		minBytes: 8,
+		convert: (dv, le) => dv.getFloat64(0, le).toString(),
+	},
 
-	{ label: "GUID", minBytes: 16, convert: (dv, le) => getGUID(dv.buffer, le) },
+	{
+		label: "GUID",
+		minBytes: 16,
+		convert: (dv, le) => getGUID(dv.buffer, le),
+	},
 ];
 
 const addTextDecoder = (encoding: string, minBytes: number) => {
@@ -151,7 +215,7 @@ const addTextDecoder = (encoding: string, minBytes: number) => {
 	inspectTypesBuilder.push({
 		label: encoding.toUpperCase(),
 		minBytes,
-		convert: dv => {
+		convert: (dv) => {
 			const utf8 = new TextDecoder(encoding).decode(dv.buffer);
 			for (const char of utf8) return char;
 			return utf8;
@@ -167,4 +231,5 @@ addTextDecoder("big5", 2);
 addTextDecoder("iso-2022-kr", 2);
 addTextDecoder("shift-jis", 2);
 
-export const inspectableTypes: readonly IInspectableType[] = inspectTypesBuilder;
+export const inspectableTypes: readonly IInspectableType[] =
+	inspectTypesBuilder;

@@ -1,8 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license
 
-import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+	Suspense,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
+
 import { HexDecorator } from "../../shared/decorators";
 import { EditRangeOp, HexDocumentEditOp } from "../../shared/hexDocumentModel";
 import {
@@ -11,6 +19,7 @@ import {
 	InspectorLocation,
 	MessageType,
 } from "../../shared/protocol";
+import { binarySearch } from "../../shared/util/binarySearch";
 import { Range } from "../../shared/util/range";
 import { PastePopup } from "./copyPaste";
 import _style from "./dataDisplay.css";
@@ -36,7 +45,6 @@ import {
 	parseHexDigit,
 	throwOnUndefinedAccessInDev,
 } from "./util";
-import { binarySearch } from "../../shared/util/binarySearch";
 
 const style = throwOnUndefinedAccessInDev(_style);
 
@@ -47,20 +55,28 @@ const EmptyDataCell = () => (
 );
 
 const Byte: React.FC<{ value: number }> = ({ value }) => (
-	<span className={dataCellCls}>{value.toString(16).padStart(2, "0").toUpperCase()}</span>
+	<span className={dataCellCls}>
+		{value.toString(16).padStart(2, "0").toUpperCase()}
+	</span>
 );
 
 // Byte cells are square, and show two (hex) characters, but text cells show a
 // single character so can be narrower--by this constant multiplier.
 const textCellWidth = 0.7;
 
-const DataCellGroup: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, ...props }) => (
+const DataCellGroup: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
+	children,
+	...props
+}) => (
 	<div className={style.dataCellGroup} {...props}>
 		{children}
 	</div>
 );
 
-const Address: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, ...props }) => (
+const Address: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
+	children,
+	...props
+}) => (
 	<div className={style.address} {...props}>
 		{children}
 	</div>
@@ -87,8 +103,7 @@ export const DataHeader: React.FC = () => {
 					style={{
 						width: `calc(var(--cell-size) * ${editorSettings.columnWidth * textCellWidth})`,
 						flexShrink: 0,
-					}}
-				>
+					}}>
 					{strings.decodedText}
 				</DataCellGroup>
 			)}
@@ -105,8 +120,11 @@ const DataInspector: React.FC = () => {
 			{isInspecting ? "Data Inspector" : null}
 			<div
 				className={style.dataInspectorWrap}
-				style={{ "--scrollbar-width": `${getScrollDimensions().width}px` } as React.CSSProperties}
-			>
+				style={
+					{
+						"--scrollbar-width": `${getScrollDimensions().width}px`,
+					} as React.CSSProperties
+				}>
 				<DataInspectorAside onInspecting={setIsInspecting} />
 			</div>
 		</DataCellGroup>
@@ -137,22 +155,29 @@ export const DataDisplay: React.FC = () => {
 
 	// When the focused byte changes, make sure it's in view
 	useEffect(() => {
-		const disposable = ctx.onDidChangeAnyFocus(byte => {
+		const disposable = ctx.onDidChangeAnyFocus((byte) => {
 			if (byte === undefined) {
 				return;
 			}
 
-			const displayedBytes = select.getDisplayedBytes(dimensions, columnWidth);
-			const byteRowStart = select.startOfRowContainingByte(byte, columnWidth);
+			const displayedBytes = select.getDisplayedBytes(
+				dimensions,
+				columnWidth,
+			);
+			const byteRowStart = select.startOfRowContainingByte(
+				byte,
+				columnWidth,
+			);
 			let newOffset: number;
 
-			setOffset(offset => {
+			setOffset((offset) => {
 				// If the focused byte is before the selected byte, adjust upwards.
 				// If the focused byte is off the window, adjust the offset so it's displayed
 				if (byte < offset) {
 					return (newOffset = byteRowStart);
 				} else if (byte - offset >= displayedBytes) {
-					return (newOffset = byteRowStart - displayedBytes + columnWidth);
+					return (newOffset =
+						byteRowStart - displayedBytes + columnWidth);
 				} else {
 					return offset;
 				}
@@ -160,11 +185,13 @@ export const DataDisplay: React.FC = () => {
 
 			if (newOffset! !== undefined) {
 				// Ensure the scroll bounds contain the new offset.
-				setScrollBounds(scrollBounds => {
+				setScrollBounds((scrollBounds) => {
 					if (newOffset < scrollBounds.start) {
 						return scrollBounds.expandToContain(newOffset);
 					} else if (newOffset > scrollBounds.end) {
-						return scrollBounds.expandToContain(newOffset + displayedBytes * 2);
+						return scrollBounds.expandToContain(
+							newOffset + displayedBytes * 2,
+						);
 					} else {
 						return scrollBounds;
 					}
@@ -180,12 +207,20 @@ export const DataDisplay: React.FC = () => {
 		for (let i = 0; i < allEditTimeline.ranges.length; i++) {
 			const range = allEditTimeline.ranges[i];
 			// todo: eventually support delete decorations?
-			if (range.op !== EditRangeOp.Insert || range.editIndex < unsavedEditIndex) {
+			if (
+				range.op !== EditRangeOp.Insert ||
+				range.editIndex < unsavedEditIndex
+			) {
 				continue;
 			}
 
 			if (range.value.byteLength > 0) {
-				unsavedRanges.push(new Range(range.offset, range.offset + range.value.byteLength));
+				unsavedRanges.push(
+					new Range(
+						range.offset,
+						range.offset + range.value.byteLength,
+					),
+				);
 			}
 		}
 		ctx.unsavedRanges = unsavedRanges;
@@ -205,7 +240,10 @@ export const DataDisplay: React.FC = () => {
 			}
 
 			const current = ctx.focusedElement || FocusedElement.zero;
-			const displayedBytes = select.getDisplayedBytes(dimensions, columnWidth);
+			const displayedBytes = select.getDisplayedBytes(
+				dimensions,
+				columnWidth,
+			);
 
 			let delta = 0;
 			switch (e.key) {
@@ -225,7 +263,10 @@ export const DataDisplay: React.FC = () => {
 					delta = -current.byte;
 					break;
 				case "End":
-					delta = fileSize === undefined ? displayedBytes : fileSize - current.byte - 1;
+					delta =
+						fileSize === undefined
+							? displayedBytes
+							: fileSize - current.byte - 1;
 					break;
 				case "PageUp":
 					delta = -displayedBytes;
@@ -243,7 +284,11 @@ export const DataDisplay: React.FC = () => {
 			const next = new FocusedElement(
 				current.char,
 				// Clamp on fileSize due to the added data cell for appending bytes at eof
-				clamp(0, current.byte + delta, fileSize !== undefined ? fileSize : Infinity),
+				clamp(
+					0,
+					current.byte + delta,
+					fileSize !== undefined ? fileSize : Infinity,
+				),
 			);
 			if (next.key === current.key) {
 				return;
@@ -261,12 +306,17 @@ export const DataDisplay: React.FC = () => {
 				// closer of the start or end of the selection to the focused byte
 				// (allows shrinking the selection.)
 				if (!srange) {
-					ctx.setSelectionRanges([Range.inclusive(current.byte, next.byte)]);
+					ctx.setSelectionRanges([
+						Range.inclusive(current.byte, next.byte),
+					]);
 				} else if (!srange.includes(next.byte)) {
-					ctx.replaceLastSelectionRange(srange.expandToContain(next.byte));
+					ctx.replaceLastSelectionRange(
+						srange.expandToContain(next.byte),
+					);
 				} else {
 					const closerToEnd =
-						Math.abs(srange.end - current.byte) < Math.abs(srange.start - current.byte);
+						Math.abs(srange.end - current.byte) <
+						Math.abs(srange.start - current.byte);
 					const nextRange = closerToEnd
 						? new Range(srange.start, next.byte + 1)
 						: new Range(next.byte, srange.end);
@@ -279,15 +329,22 @@ export const DataDisplay: React.FC = () => {
 		[dimensions, columnWidth, fileSize],
 	);
 
-	useGlobalHandler<ClipboardEvent>("paste", evt => {
+	useGlobalHandler<ClipboardEvent>("paste", (evt) => {
 		const target = document.activeElement;
-		if (!(target instanceof HTMLElement) || !target.classList.contains(dataCellCls)) {
+		if (
+			!(target instanceof HTMLElement) ||
+			!target.classList.contains(dataCellCls)
+		) {
 			return;
 		}
 
 		const pasteData = evt.clipboardData?.getData("text");
 		if (pasteData && ctx.focusedElement) {
-			setPasting({ target, offset: ctx.focusedElement.byte, data: pasteData });
+			setPasting({
+				target,
+				offset: ctx.focusedElement.byte,
+				data: pasteData,
+			});
 		}
 	});
 
@@ -295,8 +352,10 @@ export const DataDisplay: React.FC = () => {
 		if (ctx.focusedElement) {
 			select.messageHandler.sendEvent({
 				type: MessageType.DoCopy,
-				selections: ctx.selection.map(r => [r.start, r.end]),
-				format: ctx.focusedElement.char ? CopyFormat.Utf8 : CopyFormat.Base64,
+				selections: ctx.selection.map((r) => [r.start, r.end]),
+				format: ctx.focusedElement.char
+					? CopyFormat.Utf8
+					: CopyFormat.Base64,
 			});
 		}
 	});
@@ -327,7 +386,11 @@ const DataRows: React.FC = () => {
 	const endPageStartsAt = endPageNo * dataPageSize;
 
 	const rows: React.ReactChild[] = [];
-	for (let i = startPageStartsAt; i <= endPageStartsAt && i < fileSize; i += dataPageSize) {
+	for (
+		let i = startPageStartsAt;
+		i <= endPageStartsAt && i < fileSize;
+		i += dataPageSize
+	) {
 		rows.push(
 			<DataPage
 				key={i}
@@ -356,7 +419,11 @@ const LoadingDataRow: React.FC<{ width: number; showDecodedText: boolean }> = ({
 	for (let i = 0; i < width; i++) {
 		const str = (text[i * 2] || ".") + (text[i * 2 + 1] || ".");
 		cells.push(
-			<span className={dataCellCls} aria-hidden style={{ opacity: 0.5 }} key={i}>
+			<span
+				className={dataCellCls}
+				aria-hidden
+				style={{ opacity: 0.5 }}
+				key={i}>
 				{str}
 			</span>,
 		);
@@ -389,8 +456,10 @@ interface IDataPageProps {
 	dimensions: select.IDimensions;
 }
 
-const DataPage: React.FC<IDataPageProps> = props => (
-	<div className={style.dataPage} style={{ transform: `translateY(${props.top}px)` }}>
+const DataPage: React.FC<IDataPageProps> = (props) => (
+	<div
+		className={style.dataPage}
+		style={{ transform: `translateY(${props.top}px)` }}>
 		<Suspense fallback={<LoadingDataRows {...props} />}>
 			<DataPageContents {...props} />
 		</Suspense>
@@ -403,14 +472,18 @@ const generateRows = (
 ) => {
 	const rows: React.ReactNode[] = [];
 	let row = (props.rowsStart - props.pageStart) / props.columnWidth;
-	const lastRowIndex = props.columnWidth * Math.floor(props.fileSize / props.columnWidth);
-	for (let i = props.rowsStart; i < props.rowsEnd && i <= lastRowIndex; i += props.columnWidth) {
+	const lastRowIndex =
+		props.columnWidth * Math.floor(props.fileSize / props.columnWidth);
+	for (
+		let i = props.rowsStart;
+		i < props.rowsEnd && i <= lastRowIndex;
+		i += props.columnWidth
+	) {
 		rows.push(
 			<div
 				key={i}
 				className={style.dataRow}
-				style={{ top: `${row++ * props.dimensions.rowPxHeight}px` }}
-			>
+				style={{ top: `${row++ * props.dimensions.rowPxHeight}px` }}>
 				<DataCellGroup>
 					<Address>{i.toString(16).padStart(8, "0")}</Address>
 				</DataCellGroup>
@@ -422,15 +495,18 @@ const generateRows = (
 	return rows;
 };
 
-const LoadingDataRows: React.FC<IDataPageProps> = props => (
+const LoadingDataRows: React.FC<IDataPageProps> = (props) => (
 	<>
 		{generateRows(props, () => (
-			<LoadingDataRow width={props.columnWidth} showDecodedText={props.showDecodedText} />
+			<LoadingDataRow
+				width={props.columnWidth}
+				showDecodedText={props.showDecodedText}
+			/>
 		))}
 	</>
 );
 
-const DataPageContents: React.FC<IDataPageProps> = props => {
+const DataPageContents: React.FC<IDataPageProps> = (props) => {
 	const decorators = useRecoilValue(select.decoratorsPage(props.pageNo));
 	const dataPageSelector = select.editedDataPages(props.pageNo);
 	const [data] = useLastAsyncRecoilValue(dataPageSelector);
@@ -464,13 +540,17 @@ const DataCell: React.FC<{
 	const elRef = useRef<HTMLSpanElement | null>(null);
 	const focusedElement = new FocusedElement(isChar, offset);
 	const ctx = useDisplayContext();
-	const setReadonlyWarning = useSetRecoilState(select.showReadonlyWarningForEl);
+	const setReadonlyWarning = useSetRecoilState(
+		select.showReadonlyWarningForEl,
+	);
 	const editMode = useRecoilValue(select.editMode);
 
 	const onMouseEnter = useCallback(() => {
 		ctx.hoveredByte = focusedElement;
 		if (!isAppend && ctx.isSelecting !== undefined) {
-			ctx.replaceLastSelectionRange(Range.inclusive(ctx.isSelecting, offset));
+			ctx.replaceLastSelectionRange(
+				Range.inclusive(ctx.isSelecting, offset),
+			);
 		}
 	}, [offset, focusedElement]);
 
@@ -516,9 +596,13 @@ const DataCell: React.FC<{
 				// of an existing offset. We *don't* include that offset since we don't want
 				// to swap the offset.
 				if (e.ctrlKey || e.metaKey) {
-					ctx.addSelectionRange(Range.inclusive(prevFocused.byte, offset));
+					ctx.addSelectionRange(
+						Range.inclusive(prevFocused.byte, offset),
+					);
 				} else {
-					ctx.setSelectionRanges([Range.inclusive(prevFocused.byte, offset)]);
+					ctx.setSelectionRanges([
+						Range.inclusive(prevFocused.byte, offset),
+					]);
 				}
 			} else if (e.ctrlKey || e.metaKey) {
 				ctx.addSelectionRange(Range.single(offset));
@@ -557,12 +641,17 @@ const DataCell: React.FC<{
 				select.messageHandler
 					.sendRequest<DeleteAcceptedMessage>({
 						type: MessageType.RequestDeletes,
-						deletes: ctx.getSelectionRanges().map(r => ({ start: r.start, end: r.end })),
+						deletes: ctx
+							.getSelectionRanges()
+							.map((r) => ({ start: r.start, end: r.end })),
 					})
 					.then(() => ctx.setSelectionRanges([]));
 			}
 
-			let newValue = isChar && e.key.length === 1 ? e.key.charCodeAt(0) : parseHexDigit(e.key);
+			let newValue =
+				isChar && e.key.length === 1
+					? e.key.charCodeAt(0)
+					: parseHexDigit(e.key);
 			if (newValue === undefined) {
 				return;
 			}
@@ -680,9 +769,10 @@ const DataCell: React.FC<{
 			onMouseDown={onMouseDown}
 			onMouseLeave={onMouseLeave}
 			onKeyDown={onKeyDown}
-			data-key={focusedElement.key}
-		>
-			{firstOctetOfEdit !== undefined ? firstOctetOfEdit.toString(16).toUpperCase() : children}
+			data-key={focusedElement.key}>
+			{firstOctetOfEdit !== undefined
+				? firstOctetOfEdit.toString(16).toUpperCase()
+				: children}
 		</span>
 	);
 };
@@ -694,7 +784,14 @@ const DataRowContents: React.FC<{
 	rawBytes: Uint8Array;
 	isRowWithInsertDataCell: boolean;
 	decorators: HexDecorator[];
-}> = ({ offset, width, showDecodedText, rawBytes, isRowWithInsertDataCell, decorators }) => {
+}> = ({
+	offset,
+	width,
+	showDecodedText,
+	rawBytes,
+	isRowWithInsertDataCell,
+	decorators,
+}) => {
 	let memoValue = "";
 	const ctx = useDisplayContext();
 	for (const byte of rawBytes) {
@@ -704,7 +801,7 @@ const DataRowContents: React.FC<{
 	const { bytes, chars } = useMemo(() => {
 		const bytes: React.ReactChild[] = [];
 		const chars: React.ReactChild[] = [];
-		const searcher = binarySearch<HexDecorator>(d => d.range.end);
+		const searcher = binarySearch<HexDecorator>((d) => d.range.end);
 		let j = searcher(offset, decorators);
 		for (let i = 0; i < width; i++) {
 			const boffset = offset + i;
@@ -712,8 +809,14 @@ const DataRowContents: React.FC<{
 			let decorator: HexDecorator | undefined = undefined;
 			// Searches for the decorator, if any. Leverages the fact that
 			// the decorators are sorted by range.
-			while (j < decorators.length && decorators[j].range.start <= boffset) {
-				if (boffset >= decorators[j].range.start && boffset < decorators[j].range.end) {
+			while (
+				j < decorators.length &&
+				decorators[j].range.start <= boffset
+			) {
+				if (
+					boffset >= decorators[j].range.start &&
+					boffset < decorators[j].range.end
+				) {
 					decorator = decorators[j];
 					break;
 				}
@@ -723,12 +826,22 @@ const DataRowContents: React.FC<{
 			if (value === undefined) {
 				if (isRowWithInsertDataCell && !ctx.isReadonly) {
 					bytes.push(
-						<DataCell key={i} offset={boffset} isChar={false} isAppend={true} value={value}>
+						<DataCell
+							key={i}
+							offset={boffset}
+							isChar={false}
+							isAppend={true}
+							value={value}>
 							+
 						</DataCell>,
 					);
 					chars.push(
-						<DataCell key={i} offset={boffset} isChar={true} isAppend={true} value={value}>
+						<DataCell
+							key={i}
+							offset={boffset}
+							isChar={true}
+							isAppend={true}
+							value={value}>
 							+
 						</DataCell>,
 					);
@@ -743,12 +856,14 @@ const DataRowContents: React.FC<{
 			bytes.push(
 				<DataCell
 					key={i}
-					className={clsx(decorator !== undefined && HexDecoratorStyles[decorator.type])}
+					className={clsx(
+						decorator !== undefined &&
+							HexDecoratorStyles[decorator.type],
+					)}
 					offset={boffset}
 					isChar={false}
 					isAppend={false}
-					value={value}
-				>
+					value={value}>
 					{value.toString(16).padStart(2, "0").toUpperCase()}
 				</DataCell>,
 			);
@@ -762,11 +877,13 @@ const DataRowContents: React.FC<{
 						isChar={true}
 						isAppend={false}
 						className={clsx(
-							char === undefined ? style.nonGraphicChar : undefined,
-							decorator !== undefined && HexDecoratorStyles[decorator.type],
+							char === undefined
+								? style.nonGraphicChar
+								: undefined,
+							decorator !== undefined &&
+								HexDecoratorStyles[decorator.type],
 						)}
-						value={value}
-					>
+						value={value}>
 						{char === undefined ? "." : char}
 					</DataCell>,
 				);

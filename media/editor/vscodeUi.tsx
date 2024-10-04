@@ -3,6 +3,7 @@ import Close from "@vscode/codicons/src/icons/close.svg";
 import React, { KeyboardEvent, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { usePopper } from "react-popper";
+
 import { useGlobalHandler } from "./hooks";
 import { clsx, throwOnUndefinedAccessInDev } from "./util";
 import _style from "./vscodeUi.css";
@@ -21,7 +22,9 @@ export const VsTextFieldGroup = React.forwardRef<
 		<VsTextField
 			{...props}
 			ref={ref}
-			style={{ paddingRight: buttons * (iconButtonMargin + iconButtonSize) }}
+			style={{
+				paddingRight: buttons * (iconButtonMargin + iconButtonSize),
+			}}
 		/>
 		<div className={style.vsTextFieldGroupButtons}>{children}</div>
 	</div>
@@ -35,21 +38,26 @@ export const VsTextField = React.forwardRef<
 		<input
 			{...props}
 			ref={ref}
-			className={clsx(className, style.vsTextFieldInner, !!error && style.vsTextFieldError)}
+			className={clsx(
+				className,
+				style.vsTextFieldInner,
+				!!error && style.vsTextFieldError,
+			)}
 		/>
 		{error && <div className={style.vsTextFieldErrorMessage}>{error}</div>}
 	</div>
 ));
 
-export const VsProgressIndicator: React.FC = () => <div className={style.vsProgressIndicator} />;
+export const VsProgressIndicator: React.FC = () => (
+	<div className={style.vsProgressIndicator} />
+);
 
 export const iconButtonSize = 22;
 const iconButtonMargin = 3;
 
-export const VsButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({
-	children,
-	...props
-}) => (
+export const VsButton: React.FC<
+	React.ButtonHTMLAttributes<HTMLButtonElement>
+> = ({ children, ...props }) => (
 	<button className={style.vsButton} {...props}>
 		{children}
 	</button>
@@ -59,7 +67,10 @@ const VsIconButtonInner = React.forwardRef<
 	HTMLButtonElement,
 	React.ButtonHTMLAttributes<HTMLButtonElement>
 >((props, ref) => (
-	<button {...props} className={clsx(props.className, style.vsIconButtonInner)} ref={ref}>
+	<button
+		{...props}
+		className={clsx(props.className, style.vsIconButtonInner)}
+		ref={ref}>
 		{props.children}
 	</button>
 ));
@@ -68,7 +79,12 @@ export const VsIconButton = React.forwardRef<
 	HTMLButtonElement,
 	{ title: string } & React.ButtonHTMLAttributes<HTMLButtonElement>
 >((props, ref) => (
-	<VsIconButtonInner ref={ref} role="button" {...props} aria-label={props.title} />
+	<VsIconButtonInner
+		ref={ref}
+		role="button"
+		{...props}
+		aria-label={props.title}
+	/>
 ));
 
 export const VsIconCheckbox: React.FC<{
@@ -80,8 +96,7 @@ export const VsIconCheckbox: React.FC<{
 		role="checkbox"
 		title={title}
 		aria-checked={checked}
-		onClick={() => onToggle(!checked)}
-	>
+		onClick={() => onToggle(!checked)}>
 		{children}
 	</VsIconButton>
 );
@@ -97,10 +112,9 @@ export interface IPopoverProps {
 	arrow?: { className: string; size: number };
 }
 
-const PopoverArrow: React.FC<{ size: number } & React.SVGProps<SVGSVGElement>> = ({
-	size: h,
-	...props
-}) => {
+const PopoverArrow: React.FC<
+	{ size: number } & React.SVGProps<SVGSVGElement>
+> = ({ size: h, ...props }) => {
 	const w = h * 1.5;
 	return (
 		<svg data-popper-arrow height={h} width={w} {...props}>
@@ -120,7 +134,9 @@ export const Popover: React.FC<IPopoverProps> = ({
 	hide,
 	...props
 }) => {
-	const [popperElement, setPopperElement] = useState<HTMLElement | null>(null);
+	const [popperElement, setPopperElement] = useState<HTMLElement | null>(
+		null,
+	);
 	const [arrowElement, setArrowElement] = useState<HTMLElement | null>(null);
 	const { styles, attributes } = usePopper(
 		anchor,
@@ -142,8 +158,11 @@ export const Popover: React.FC<IPopoverProps> = ({
 
 	useGlobalHandler<MouseEvent>(
 		"mousedown",
-		evt => {
-			if (evt.target instanceof Element && !popperElement?.contains(evt.target)) {
+		(evt) => {
+			if (
+				evt.target instanceof Element &&
+				!popperElement?.contains(evt.target)
+			) {
 				hide();
 			}
 		},
@@ -159,9 +178,10 @@ export const Popover: React.FC<IPopoverProps> = ({
 			tabIndex={visible ? 0 : -1}
 			role="region"
 			{...attributes.popper}
-			{...props}
-		>
-			<div className={className} style={arrow && { margin: arrow.size - 1 }}>
+			{...props}>
+			<div
+				className={className}
+				style={arrow && { margin: arrow.size - 1 }}>
 				{children}
 			</div>
 			{arrow && (
@@ -169,8 +189,7 @@ export const Popover: React.FC<IPopoverProps> = ({
 					ref={setArrowElement}
 					className={arrow.className}
 					style={styles.arrow}
-					{...attributes.arrow}
-				>
+					{...attributes.arrow}>
 					<PopoverArrow size={arrow.size} />
 				</div>
 			)}
@@ -183,10 +202,10 @@ const tooltipArrow = { size: 8, className: style.tooltipArrow };
 
 export const tooltipArrowSize = tooltipArrow.size;
 
-export const VsTooltipPopover: React.FC<IPopoverProps> = props => {
+export const VsTooltipPopover: React.FC<IPopoverProps> = (props) => {
 	useGlobalHandler<KeyboardEvent>(
 		"keydown",
-		evt => {
+		(evt) => {
 			if (evt.key === "Escape") {
 				props.hide();
 			}
@@ -200,16 +219,24 @@ export const VsTooltipPopover: React.FC<IPopoverProps> = props => {
 			className={clsx(props.className, style.tooltipPopover)}
 			role="alert"
 			focusable={false}
-			arrow={tooltipArrow}
-		>
+			arrow={tooltipArrow}>
 			{props.children}
 		</Popover>
 	);
 };
 
-export const VsWidgetPopover: React.FC<IPopoverProps> = props => (
-	<Popover {...props} className={clsx(props.className, style.tooltipPopover, style.widgetPopover)}>
-		<VsIconButton title="Close" onClick={props.hide} className={style.widgetPopoverCloser}>
+export const VsWidgetPopover: React.FC<IPopoverProps> = (props) => (
+	<Popover
+		{...props}
+		className={clsx(
+			props.className,
+			style.tooltipPopover,
+			style.widgetPopover,
+		)}>
+		<VsIconButton
+			title="Close"
+			onClick={props.hide}
+			className={style.widgetPopoverCloser}>
 			<Close />
 		</VsIconButton>
 		{props.children}

@@ -1,5 +1,6 @@
 import { bulkhead } from "cockatiel";
 import * as vscode from "vscode";
+
 import { HexDecorator } from "./decorators";
 import {
 	DiffDecoratorResponseMessage,
@@ -7,6 +8,7 @@ import {
 	DiffMessageType,
 } from "./diffWorkerProtocol";
 import { HexDocumentModel } from "./hexDocumentModel";
+
 export type HexDiffModelBuilder = typeof HexDiffModel.Builder.prototype;
 
 export class HexDiffModel {
@@ -27,21 +29,26 @@ export class HexDiffModel {
 				const oSize = await this.originalModel.sizeWithEdits();
 				const mSize = await this.modifiedModel.sizeWithEdits();
 				if (oSize === undefined || mSize === undefined) {
-					throw new Error(vscode.l10n.t("HexEditor Diff: Failed to get file sizes."));
+					throw new Error(
+						vscode.l10n.t(
+							"HexEditor Diff: Failed to get file sizes.",
+						),
+					);
 				}
 
 				const oArray = new Uint8Array(oSize);
 				const mArray = new Uint8Array(mSize);
 				await this.originalModel.readInto(0, oArray);
 				await this.modifiedModel.readInto(0, mArray);
-				const decorators = await this.messageHandler.sendRequest<DiffDecoratorResponseMessage>(
-					{
-						type: DiffMessageType.DiffDecoratorRequest,
-						original: oArray,
-						modified: mArray,
-					},
-					[oArray.buffer, mArray.buffer],
-				);
+				const decorators =
+					await this.messageHandler.sendRequest<DiffDecoratorResponseMessage>(
+						{
+							type: DiffMessageType.DiffDecoratorRequest,
+							original: oArray,
+							modified: mArray,
+						},
+						[oArray.buffer, mArray.buffer],
+					);
 				this.decorators = decorators;
 			}
 			return uri.toString() === this.originalModel.uri.toString()
@@ -66,17 +73,26 @@ export class HexDiffModel {
 
 		private built?: HexDiffModel;
 
-		constructor(private readonly messageHandler: DiffExtensionHostMessageHandler) {
+		constructor(
+			private readonly messageHandler: DiffExtensionHostMessageHandler,
+		) {
 			let promise: Promise<HexDocumentModel>;
 			let res: (model: HexDocumentModel) => void;
 
-			promise = new Promise<HexDocumentModel>(resolve => (res = resolve));
+			promise = new Promise<HexDocumentModel>(
+				(resolve) => (res = resolve),
+			);
 			this.original = { promise: promise, resolve: res! };
-			promise = new Promise<HexDocumentModel>(resolve => (res = resolve));
+			promise = new Promise<HexDocumentModel>(
+				(resolve) => (res = resolve),
+			);
 			this.modified = { promise: promise, resolve: res! };
 		}
 
-		public setModel(side: "original" | "modified", document: HexDocumentModel) {
+		public setModel(
+			side: "original" | "modified",
+			document: HexDocumentModel,
+		) {
 			if (side === "original") {
 				this.original.resolve(document);
 			} else {
@@ -91,7 +107,11 @@ export class HexDiffModel {
 				this.modified.promise,
 			]);
 			if (this.built === undefined) {
-				this.built = new HexDiffModel(original, modified, this.messageHandler);
+				this.built = new HexDiffModel(
+					original,
+					modified,
+					this.messageHandler,
+				);
 			}
 			return this.built;
 		}

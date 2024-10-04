@@ -12,6 +12,7 @@ import React, {
 } from "react";
 import { RecoilValue, useRecoilValue, useRecoilValueLoadable } from "recoil";
 import { ColorMap, observeColors, parseColors } from "vscode-webview-tools";
+
 import * as select from "./state";
 
 export const useTheme = (): ColorMap => {
@@ -44,7 +45,9 @@ export const usePersistedState = <T>(
 	key: string,
 	defaultValue: T,
 ): [T, React.Dispatch<React.SetStateAction<T>>] => {
-	const [value, setValue] = useState<T>(select.vscode.getState()?.[key] ?? defaultValue);
+	const [value, setValue] = useState<T>(
+		select.vscode.getState()?.[key] ?? defaultValue,
+	);
 
 	useLazyEffect(() => {
 		select.vscode.setState({ ...select.vscode.getState(), [key]: value });
@@ -56,7 +59,10 @@ export const usePersistedState = <T>(
 /**
  * An effect-priority hook that invokes the function when the value changes.
  */
-export const useOnChange = <T>(value: T, fn: (value: T, previous: T) => void): void => {
+export const useOnChange = <T>(
+	value: T,
+	fn: (value: T, previous: T) => void,
+): void => {
 	const previous = useRef<T>(value);
 	useEffect(() => {
 		if (value !== previous.current) {
@@ -75,12 +81,14 @@ export const useUniqueId = (prefix = "uniqueid-"): string =>
 const zeroRect: DOMRectReadOnly = new DOMRect();
 
 /** Uses the measured DOM size of the element, watching for resizes. */
-export const useSize = (target: React.RefObject<HTMLElement>): DOMRectReadOnly => {
+export const useSize = (
+	target: React.RefObject<HTMLElement>,
+): DOMRectReadOnly => {
 	const [size, setSize] = useState<DOMRectReadOnly>(zeroRect);
 
 	const observer = useMemo(
 		() =>
-			new ResizeObserver(entry => {
+			new ResizeObserver((entry) => {
 				if (entry.length) {
 					setSize(entry[0].target.getBoundingClientRect());
 				}
@@ -102,12 +110,18 @@ export const useSize = (target: React.RefObject<HTMLElement>): DOMRectReadOnly =
 	return size;
 };
 
-export const useLastAsyncRecoilValue = <T>(value: RecoilValue<T>): [value: T, isStale: boolean] => {
+export const useLastAsyncRecoilValue = <T>(
+	value: RecoilValue<T>,
+): [value: T, isStale: boolean] => {
 	const loadable = useRecoilValueLoadable(value);
 	const lastValue = useRef<{ value: T; key: string; isStale: boolean }>();
 	switch (loadable.state) {
 		case "hasValue":
-			lastValue.current = { value: loadable.contents, isStale: false, key: value.key };
+			lastValue.current = {
+				value: loadable.contents,
+				isStale: false,
+				key: value.key,
+			};
 			break;
 		case "loading":
 			if (lastValue.current?.key !== value.key) {
@@ -119,7 +133,9 @@ export const useLastAsyncRecoilValue = <T>(value: RecoilValue<T>): [value: T, is
 		case "hasError":
 			throw loadable.contents;
 		default:
-			throw new Error(`Unknown loadable state ${JSON.stringify(loadable)}`);
+			throw new Error(
+				`Unknown loadable state ${JSON.stringify(loadable)}`,
+			);
 	}
 
 	return [lastValue.current.value, lastValue.current.isStale];
@@ -144,10 +160,16 @@ export const useGlobalHandler = <T = Event>(
  * @param useLastAsync Whether to use stale bytes if new ones are being edited
  * in, as opposed to allowing the component to Suspend.
  */
-export const useFileBytes = (offset: number, count: number, useLastAsync = false) => {
+export const useFileBytes = (
+	offset: number,
+	count: number,
+	useLastAsync = false,
+) => {
 	const dataPageSize = useRecoilValue(select.dataPageSize);
 	if (count > dataPageSize) {
-		throw new Error("Cannot useFileBytes() with a count larger than the page size");
+		throw new Error(
+			"Cannot useFileBytes() with a count larger than the page size",
+		);
 	}
 
 	// We have to select both the 'start' and 'end' page since the data might

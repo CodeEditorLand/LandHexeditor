@@ -297,8 +297,14 @@ export type FromWebviewMessage =
 	| CopyMessage
 	| RequestDeletesMessage;
 
-export type ExtensionHostMessageHandler = MessageHandler<ToWebviewMessage, FromWebviewMessage>;
-export type WebviewMessageHandler = MessageHandler<FromWebviewMessage, ToWebviewMessage>;
+export type ExtensionHostMessageHandler = MessageHandler<
+	ToWebviewMessage,
+	FromWebviewMessage
+>;
+export type WebviewMessageHandler = MessageHandler<
+	FromWebviewMessage,
+	ToWebviewMessage
+>;
 
 /**
  * Helper for postMessage-based RPC.
@@ -312,12 +318,18 @@ export class MessageHandler<TTo, TFrom> {
 
 	constructor(
 		public messageHandler: (msg: TFrom) => Promise<TTo | undefined>,
-		private readonly postMessage: (msg: WebviewMessage<TTo>, transfer?: Transferable[]) => void,
+		private readonly postMessage: (
+			msg: WebviewMessage<TTo>,
+			transfer?: Transferable[],
+		) => void,
 	) {}
 
 	/** Sends a request without waiting for a response */
 	public sendEvent(body: TTo, transfer?: Transferable[]): void {
-		this.postMessage({ body, messageId: this.messageIdCounter++ }, transfer);
+		this.postMessage(
+			{ body, messageId: this.messageIdCounter++ },
+			transfer,
+		);
 	}
 
 	/** Sends a request that expects a response */
@@ -328,7 +340,10 @@ export class MessageHandler<TTo, TFrom> {
 		const id = this.messageIdCounter++;
 		this.postMessage({ body: msg, messageId: id }, transfer);
 		return new Promise<TResponse>((resolve, reject) => {
-			this.pendingMessages.set(id, { resolve: resolve as (msg: TFrom) => void, reject });
+			this.pendingMessages.set(id, {
+				resolve: resolve as (msg: TFrom) => void,
+				reject,
+			});
 		});
 	}
 
@@ -348,7 +363,7 @@ export class MessageHandler<TTo, TFrom> {
 			this.pendingMessages.delete(message.inReplyTo);
 		} else {
 			Promise.resolve(this.messageHandler(message.body)).then(
-				reply => reply && this.sendReply(message, reply),
+				(reply) => reply && this.sendReply(message, reply),
 			);
 		}
 	}

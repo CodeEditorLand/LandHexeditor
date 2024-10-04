@@ -29,7 +29,10 @@ export class HexDiffFSProvider implements vscode.FileSystemProvider {
 		return vscode.workspace.fs.writeFile(toFileUri(uri), content);
 	}
 
-	delete(uri: vscode.Uri, options: { readonly recursive: boolean }): void | Thenable<void> {
+	delete(
+		uri: vscode.Uri,
+		options: { readonly recursive: boolean },
+	): void | Thenable<void> {
 		return vscode.workspace.fs.delete(toFileUri(uri), options);
 	}
 	rename(
@@ -47,10 +50,14 @@ export class HexDiffFSProvider implements vscode.FileSystemProvider {
 		throw new Error("Method not implemented.");
 	}
 	private _emitter = new vscode.EventEmitter<vscode.FileChangeEvent[]>();
-	onDidChangeFile: vscode.Event<vscode.FileChangeEvent[]> = this._emitter.event;
+	onDidChangeFile: vscode.Event<vscode.FileChangeEvent[]> =
+		this._emitter.event;
 	public watch(
 		uri: vscode.Uri,
-		options: { readonly recursive: boolean; readonly excludes: readonly string[] },
+		options: {
+			readonly recursive: boolean;
+			readonly excludes: readonly string[];
+		},
 	): vscode.Disposable {
 		return new vscode.Disposable(() => {});
 	}

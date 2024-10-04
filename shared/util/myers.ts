@@ -1,4 +1,5 @@
 import { ArrayChange, diffArrays } from "diff";
+
 import { HexDecorator, HexDecoratorType } from "../decorators";
 import { Range } from "./range";
 

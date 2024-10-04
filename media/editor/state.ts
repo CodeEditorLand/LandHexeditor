@@ -3,6 +3,7 @@
  *--------------------------------------------------------*/
 
 import { atom, DefaultValue, selector, selectorFamily } from "recoil";
+
 import { HexDecorator, HexDecoratorType } from "../../shared/decorators";
 import {
 	buildEditTimeline,
@@ -34,13 +35,18 @@ const acquireVsCodeApi: () => {
 
 export const vscode = acquireVsCodeApi?.();
 
-type HandlerFn = (message: ToWebviewMessage) => Promise<FromWebviewMessage> | undefined;
+type HandlerFn = (
+	message: ToWebviewMessage,
+) => Promise<FromWebviewMessage> | undefined;
 
-const handles: { [T in ToWebviewMessage["type"]]?: HandlerFn | HandlerFn[] } = {};
+const handles: { [T in ToWebviewMessage["type"]]?: HandlerFn | HandlerFn[] } =
+	{};
 
 export const registerHandler = <T extends ToWebviewMessage["type"]>(
 	typ: T,
-	handler: (msg: ToWebviewMessage & { type: T }) => Promise<FromWebviewMessage> | void,
+	handler: (
+		msg: ToWebviewMessage & { type: T },
+	) => Promise<FromWebviewMessage> | void,
 ): void => {
 	const cast = handler as HandlerFn;
 	const prev = handles[typ];
@@ -53,8 +59,11 @@ export const registerHandler = <T extends ToWebviewMessage["type"]>(
 	}
 };
 
-export const messageHandler = new MessageHandler<FromWebviewMessage, ToWebviewMessage>(
-	async msg => {
+export const messageHandler = new MessageHandler<
+	FromWebviewMessage,
+	ToWebviewMessage
+>(
+	async (msg) => {
 		const h = handles[msg.type];
 		if (!h) {
 			console.warn("unhandled message", msg);
@@ -66,14 +75,19 @@ export const messageHandler = new MessageHandler<FromWebviewMessage, ToWebviewMe
 			}
 		}
 	},
-	msg => vscode.postMessage(msg),
+	(msg) => vscode.postMessage(msg),
 );
 
-window.addEventListener("message", ev => messageHandler.handleMessage(ev.data));
+window.addEventListener("message", (ev) =>
+	messageHandler.handleMessage(ev.data),
+);
 
 const readyQuery = selector({
 	key: "ready",
-	get: () => messageHandler.sendRequest<ReadyResponseMessage>({ type: MessageType.ReadyRequest }),
+	get: () =>
+		messageHandler.sendRequest<ReadyResponseMessage>({
+			type: MessageType.ReadyRequest,
+		}),
 });
 
 /**
@@ -93,7 +107,13 @@ export const dataInspectorLocation = selector({
 		// rough approximation, if there's no enough horizontal width then use a hover instead
 		// rowPxHeight * columnWidth is the width of the 'bytes' display. Double it
 		// for the Decoded Text, if any, plus some sensible padding.
-		if (d.rowPxHeight * settings.columnWidth * (settings.showDecodedText ? 2 : 1) + 100 > d.width) {
+		if (
+			d.rowPxHeight *
+				settings.columnWidth *
+				(settings.showDecodedText ? 2 : 1) +
+				100 >
+			d.width
+		) {
 			return InspectorLocation.Hover;
 		}
 
@@ -128,8 +148,8 @@ const diskFileSize = atom({
 		get: ({ get }) => get(readyQuery).fileSize,
 	}),
 	effects_UNSTABLE: [
-		fx => {
-			registerHandler(MessageType.SetEdits, msg => {
+		(fx) => {
+			registerHandler(MessageType.SetEdits, (msg) => {
 				if (msg.replaceFileSize !== undefined) {
 					fx.setSelf(msg.replaceFileSize ?? undefined);
 				}
@@ -139,7 +159,11 @@ const diskFileSize = atom({
 				if (size === undefined) {
 					return;
 				}
-				fx.setSelf(size + fx.getLoadable(unsavedEditTimeline).getValue().sizeDelta);
+				fx.setSelf(
+					size +
+						fx.getLoadable(unsavedEditTimeline).getValue()
+							.sizeDelta,
+				);
 			});
 		},
 	],
@@ -156,7 +180,8 @@ export const fileSize = selector({
 
 const initialOffset = selector<number>({
 	key: "initialOffset",
-	get: ({ get }) => vscode.getState()?.offset ?? get(readyQuery).initialOffset,
+	get: ({ get }) =>
+		vscode.getState()?.offset ?? get(readyQuery).initialOffset,
 });
 
 /** Editor settings which have changes persisted to user settings */
@@ -167,8 +192,8 @@ export const editorSettings = atom({
 		get: ({ get }) => get(readyQuery).editorSettings,
 	}),
 	effects_UNSTABLE: [
-		fx =>
-			fx.onSet(value =>
+		(fx) =>
+			fx.onSet((value) =>
 				messageHandler.sendEvent({
 					type: MessageType.UpdateEditorSettings,
 					editorSettings: value,
@@ -192,7 +217,7 @@ const reloadGeneration = atom({
 	key: "reloadGeneration",
 	default: 0,
 	effects_UNSTABLE: [
-		fx => {
+		(fx) => {
 			registerHandler(MessageType.ReloadFromDisk, () => {
 				fx.setSelf(Date.now());
 			});
@@ -223,8 +248,10 @@ export const dimensions = atom<IDimensions>({
 });
 
 /** Gets the number of bytes visible in the window. */
-export const getDisplayedBytes = (d: IDimensions, columnWidth: number): number =>
-	columnWidth * (Math.floor(d.height / d.rowPxHeight) - 1);
+export const getDisplayedBytes = (
+	d: IDimensions,
+	columnWidth: number,
+): number => columnWidth * (Math.floor(d.height / d.rowPxHeight) - 1);
 
 /** Gets whether the byte is visible in the current window. */
 export const isByteVisible = (
@@ -232,11 +259,14 @@ export const isByteVisible = (
 	columnWidth: number,
 	offset: number,
 	byte: number,
-): boolean => byte >= offset && byte - offset < getDisplayedBytes(d, columnWidth);
+): boolean =>
+	byte >= offset && byte - offset < getDisplayedBytes(d, columnWidth);
 
 /** Returns the byte at the start of the row containing the given byte. */
-export const startOfRowContainingByte = (byte: number, columnWidth: number): number =>
-	Math.floor(byte / columnWidth) * columnWidth;
+export const startOfRowContainingByte = (
+	byte: number,
+	columnWidth: number,
+): number => Math.floor(byte / columnWidth) * columnWidth;
 
 /** Currently displayed byte offset */
 export const offset = atom({
@@ -244,10 +274,10 @@ export const offset = atom({
 	default: initialOffset,
 
 	effects_UNSTABLE: [
-		fx => {
+		(fx) => {
 			let stashedOffset: number | undefined;
 
-			fx.onSet(offset => {
+			fx.onSet((offset) => {
 				vscode.setState({ ...vscode.getState(), offset });
 			});
 
@@ -262,7 +292,7 @@ export const offset = atom({
 				}
 			});
 
-			registerHandler(MessageType.GoToOffset, msg => {
+			registerHandler(MessageType.GoToOffset, (msg) => {
 				const s = fx.getLoadable(columnWidth).getValue();
 				fx.setSelf(startOfRowContainingByte(msg.offset, s));
 			});
@@ -278,8 +308,8 @@ export const editMode = atom({
 		get: ({ get }) => get(readyQuery).editMode,
 	}),
 	effects_UNSTABLE: [
-		fx => {
-			registerHandler(MessageType.SetEditMode, msg => {
+		(fx) => {
+			registerHandler(MessageType.SetEditMode, (msg) => {
 				fx.setSelf(msg.mode);
 			});
 		},
@@ -307,11 +337,17 @@ export const scrollBounds = atom<Range>({
 	default: selector({
 		key: "initialScrollBounds",
 		get: ({ get }) => {
-			const windowSize = getDisplayedBytes(get(dimensions), get(columnWidth));
+			const windowSize = getDisplayedBytes(
+				get(dimensions),
+				get(columnWidth),
+			);
 			const offset = get(initialOffset);
 			const scrollEnd = get(fileSize) ?? offset + windowSize * 2;
 
-			return new Range(clamp(0, offset - windowSize, scrollEnd - windowSize), scrollEnd);
+			return new Range(
+				clamp(0, offset - windowSize, scrollEnd - windowSize),
+				scrollEnd,
+			);
 		},
 	}),
 });
@@ -328,7 +364,7 @@ export const edits = atom<readonly HexDocumentEdit[]>({
 	default: initialEdits,
 
 	effects_UNSTABLE: [
-		fx => {
+		(fx) => {
 			fx.onSet((newEdits, oldEditsOrDefault) => {
 				const oldEdits =
 					oldEditsOrDefault instanceof DefaultValue
@@ -343,10 +379,15 @@ export const edits = atom<readonly HexDocumentEdit[]>({
 				}
 			});
 
-			registerHandler(MessageType.SetEdits, msg => {
+			registerHandler(MessageType.SetEdits, (msg) => {
 				const edits = deserializeEdits(msg.edits);
-				fx.setSelf(prev =>
-					msg.appendOnly ? [...(prev instanceof DefaultValue ? [] : prev), ...edits] : edits,
+				fx.setSelf((prev) =>
+					msg.appendOnly
+						? [
+								...(prev instanceof DefaultValue ? [] : prev),
+								...edits,
+							]
+						: edits,
 				);
 			});
 		},
@@ -361,8 +402,8 @@ export const unsavedEditIndex = atom({
 	}),
 
 	effects_UNSTABLE: [
-		fx => {
-			registerHandler(MessageType.Saved, msg => {
+		(fx) => {
+			registerHandler(MessageType.Saved, (msg) => {
 				fx.setSelf(msg.unsavedEditIndex);
 			});
 		},
@@ -389,8 +430,8 @@ const emptyDecoratorEdits = selector({
 	key: "emptyDecoratorEdits",
 	get: ({ get }) => {
 		return get(decorators)
-			.filter(record => record.type === HexDecoratorType.Empty)
-			.map(value => {
+			.filter((record) => record.type === HexDecoratorType.Empty)
+			.map((value) => {
 				return {
 					op: HexDocumentEditOp.EmptyInsert,
 					offset: value.range.start,
@@ -427,7 +468,10 @@ export const editedDataPages = selectorFamily({
 						const pageNo = Math.floor(offset / pageSize);
 						const page = get(rawDataPages(pageNo));
 						const start = offset - pageNo * pageSize;
-						const len = Math.min(page.byteLength - start, target.byteLength);
+						const len = Math.min(
+							page.byteLength - start,
+							target.byteLength,
+						);
 						target.set(page.subarray(start, start + len), 0);
 						return Promise.resolve(len);
 					},
@@ -466,10 +510,20 @@ export const decoratorsPage = selectorFamily({
 				return [];
 			}
 			const pageSize = get(dataPageSize);
-			const searcherByEnd = binarySearch<HexDecorator>(decorator => decorator.range.end);
-			const startIndex = searcherByEnd(pageSize * pageNumber, allDecorators);
-			const searcherByStart = binarySearch<HexDecorator>(d => d.range.start);
-			const endIndex = searcherByStart(pageSize * pageNumber + pageSize+1, allDecorators);
+			const searcherByEnd = binarySearch<HexDecorator>(
+				(decorator) => decorator.range.end,
+			);
+			const startIndex = searcherByEnd(
+				pageSize * pageNumber,
+				allDecorators,
+			);
+			const searcherByStart = binarySearch<HexDecorator>(
+				(d) => d.range.start,
+			);
+			const endIndex = searcherByStart(
+				pageSize * pageNumber + pageSize + 1,
+				allDecorators,
+			);
 			return allDecorators.slice(startIndex, endIndex);
 		},
 });
@@ -482,11 +536,12 @@ const rawDataPages = selectorFamily({
 			get(reloadGeneration); // used to trigger invalidation
 			get(unsavedEditIndex); // used to trigger invalidation when the user saves
 			const pageSize = get(dataPageSize);
-			const response = await messageHandler.sendRequest<ReadRangeResponseMessage>({
-				type: MessageType.ReadRangeRequest,
-				offset: pageSize * pageNumber,
-				bytes: pageSize,
-			});
+			const response =
+				await messageHandler.sendRequest<ReadRangeResponseMessage>({
+					type: MessageType.ReadRangeRequest,
+					offset: pageSize * pageNumber,
+					bytes: pageSize,
+				});
 
 			return new Uint8Array(response.data);
 		},
@@ -503,9 +558,9 @@ export const searchResults = atom<SearchResultsWithProgress>({
 		progress: 1,
 	},
 	effects_UNSTABLE: [
-		fx => {
-			registerHandler(MessageType.SearchProgress, msg => {
-				fx.setSelf(prev =>
+		(fx) => {
+			registerHandler(MessageType.SearchProgress, (msg) => {
+				fx.setSelf((prev) =>
 					prev instanceof DefaultValue
 						? msg.data
 						: {
@@ -517,7 +572,11 @@ export const searchResults = atom<SearchResultsWithProgress>({
 			});
 
 			registerHandler(MessageType.ReloadFromDisk, () => {
-				fx.setSelf(prev => (prev instanceof DefaultValue ? prev : { ...prev, outdated: true }));
+				fx.setSelf((prev) =>
+					prev instanceof DefaultValue
+						? prev
+						: { ...prev, outdated: true },
+				);
 			});
 		},
 	],

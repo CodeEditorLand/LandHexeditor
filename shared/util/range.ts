@@ -36,7 +36,9 @@ export class Range {
 	 * Creates a new range representing [start, end], inclusive.
 	 */
 	public static inclusive(start: number, end: number): Range {
-		return end >= start ? new Range(start, end + 1) : new Range(start + 1, end);
+		return end >= start
+			? new Range(start, end + 1)
+			: new Range(start + 1, end);
 	}
 
 	/**
@@ -139,7 +141,12 @@ export function getRangeSelectionsFromStack(ranges: readonly Range[]) {
 		}
 
 		if (nextStart && (!nextEnd || nextStart.start < nextEnd.end)) {
-			if (last !== -1 && within.size && within.size % 2 === 1 && last !== nextStart.start) {
+			if (
+				last !== -1 &&
+				within.size &&
+				within.size % 2 === 1 &&
+				last !== nextStart.start
+			) {
 				result.push(new Range(last, nextStart.start));
 			}
 			last = nextStart.start;

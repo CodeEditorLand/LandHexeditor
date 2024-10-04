@@ -2,12 +2,16 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
+
 import { InspectorLocation } from "../shared/protocol";
 import { Disposable } from "./dispose";
 import { HexEditorRegistry } from "./hexEditorRegistry";
 import { randomString } from "./util";
 
-export class DataInspectorView extends Disposable implements vscode.WebviewViewProvider {
+export class DataInspectorView
+	extends Disposable
+	implements vscode.WebviewViewProvider
+{
 	public static readonly viewType = "hexEditor.dataInspectorView";
 	private _view?: vscode.WebviewView;
 	private _lastMessage: unknown;
@@ -18,11 +22,18 @@ export class DataInspectorView extends Disposable implements vscode.WebviewViewP
 	) {
 		super();
 		this._register(
-			registry.onDidChangeActiveDocument(doc => {
-				const inspectorType = vscode.workspace.getConfiguration("hexeditor").get("inspectorType");
-				const shouldShow = inspectorType === InspectorLocation.Sidebar && !!doc;
+			registry.onDidChangeActiveDocument((doc) => {
+				const inspectorType = vscode.workspace
+					.getConfiguration("hexeditor")
+					.get("inspectorType");
+				const shouldShow =
+					inspectorType === InspectorLocation.Sidebar && !!doc;
 
-				vscode.commands.executeCommand("setContext", "hexEditor:showSidebarInspector", shouldShow);
+				vscode.commands.executeCommand(
+					"setContext",
+					"hexEditor:showSidebarInspector",
+					shouldShow,
+				);
 				if (shouldShow) {
 					this.show({ autoReveal: true });
 				}
@@ -43,7 +54,7 @@ export class DataInspectorView extends Disposable implements vscode.WebviewViewP
 		webviewView.webview.html = this._getWebviewHTML(webviewView.webview);
 
 		// Message handler for when the data inspector view sends messages back to the ext host
-		webviewView.webview.onDidReceiveMessage(data => {
+		webviewView.webview.onDidReceiveMessage((data) => {
 			if (data.type === "ready") webviewView.show();
 		});
 
@@ -77,11 +88,16 @@ export class DataInspectorView extends Disposable implements vscode.WebviewViewP
 	 * @description Function to reveal the view panel
 	 * @param forceFocus Whether or not to force focus of the panel
 	 */
-	public show(options?: { forceFocus?: boolean; autoReveal?: boolean }): void {
+	public show(options?: {
+		forceFocus?: boolean;
+		autoReveal?: boolean;
+	}): void {
 		// Don't reveal the panel if configured not to
 		if (
 			options?.autoReveal &&
-			!vscode.workspace.getConfiguration("hexeditor.dataInspector").get("autoReveal", false)
+			!vscode.workspace
+				.getConfiguration("hexeditor.dataInspector")
+				.get("autoReveal", false)
 		) {
 			return;
 		}
@@ -89,7 +105,9 @@ export class DataInspectorView extends Disposable implements vscode.WebviewViewP
 		if (this._view && !options?.forceFocus) {
 			this._view.show();
 		} else {
-			vscode.commands.executeCommand(`${DataInspectorView.viewType}.focus`);
+			vscode.commands.executeCommand(
+				`${DataInspectorView.viewType}.focus`,
+			);
 		}
 
 		// We attempt to send the last message, this prevents the inspector from coming up blank

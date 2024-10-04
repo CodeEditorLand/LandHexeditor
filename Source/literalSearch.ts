@@ -7,7 +7,9 @@ for (let i = 0; i < 0xff; i++) {
 
 export const caseInsensitiveEquivalency = new Uint8Array(0xff);
 for (let i = 0; i < 0xff; i++) {
-	caseInsensitiveEquivalency[i] = String.fromCharCode(i).toUpperCase().charCodeAt(0);
+	caseInsensitiveEquivalency[i] = String.fromCharCode(i)
+		.toUpperCase()
+		.charCodeAt(0);
 }
 
 /**
@@ -79,7 +81,10 @@ export class LiteralSearch {
 			}
 
 			for (let j = 0; j < chunk.length; j++) {
-				if (equivalencyTable[chunk[j]] !== equivalencyTable[buffer[(index + k) % needleLen]]) {
+				if (
+					equivalencyTable[chunk[j]] !==
+					equivalencyTable[buffer[(index + k) % needleLen]]
+				) {
 					return;
 				}
 				k++;

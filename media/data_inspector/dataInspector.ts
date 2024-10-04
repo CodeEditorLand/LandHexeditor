@@ -15,20 +15,26 @@ const getInputElements = (() => {
 			return inputs;
 		}
 
-		const container = document.querySelector("#data-inspector .grid-container") as HTMLElement;
+		const container = document.querySelector(
+			"#data-inspector .grid-container",
+		) as HTMLElement;
 		const existingChild = container.firstElementChild;
 		inputs = [];
 
 		for (const { label } of inspectableTypes) {
 			const labelGridItem = document.createElement("div");
 			labelGridItem.className = "grid-item";
-			const labelEl = labelGridItem.appendChild(document.createElement("label"));
+			const labelEl = labelGridItem.appendChild(
+				document.createElement("label"),
+			);
 			labelEl.htmlFor = `inspect-${label}`;
 			labelEl.textContent = label;
 
 			const inputGridItem = document.createElement("div");
 			inputGridItem.className = "grid-item";
-			const inputEl = inputGridItem.appendChild(document.createElement("input"));
+			const inputEl = inputGridItem.appendChild(
+				document.createElement("input"),
+			);
 			inputEl.id = `inspect-${label}`;
 			inputEl.type = "text";
 			inputEl.disabled = true;
@@ -67,7 +73,10 @@ export function clearDataInspector(): void {
  * @param {ByteData} arrayBuffer The ArrayBuffer object to represent on the data inspector
  * @param {boolean} littleEndian Wether the data inspector is in littleEndian or bigEndian mode
  */
-export function populateDataInspector(arrayBuffer: ArrayBuffer, littleEndian: boolean): void {
+export function populateDataInspector(
+	arrayBuffer: ArrayBuffer,
+	littleEndian: boolean,
+): void {
 	const dv = new DataView(arrayBuffer);
 	const inputElements = getInputElements();
 	for (let i = 0; i < inputElements.length; i++) {
@@ -90,6 +99,7 @@ export function populateDataInspector(arrayBuffer: ArrayBuffer, littleEndian: bo
  */
 export function changeEndianness(arrayBuffer: ArrayBuffer): void {
 	const littleEndian =
-		(document.getElementById("endianness") as HTMLInputElement).value === "little";
+		(document.getElementById("endianness") as HTMLInputElement).value ===
+		"little";
 	populateDataInspector(arrayBuffer, littleEndian);
 }

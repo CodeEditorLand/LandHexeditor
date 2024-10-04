@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+
 import {
 	DiffExtensionHostMessageHandler,
 	FromDiffWorkerMessage,
@@ -28,13 +29,18 @@ function initDiffWorker(extensionUri: vscode.Uri): {
 	dispose: () => void;
 } {
 	let worker: Worker;
-	const workerFilePath = vscode.Uri.joinPath(extensionUri, "dist", "diffWorker.js").toString();
+	const workerFilePath = vscode.Uri.joinPath(
+		extensionUri,
+		"dist",
+		"diffWorker.js",
+	).toString();
 
 	try {
 		worker = new Worker(workerFilePath);
 	} catch {
 		// eslint-disable-next-line @typescript-eslint/no-var-requires
-		const { Worker } = require("worker_threads") as typeof import("worker_threads");
+		const { Worker } =
+			require("worker_threads") as typeof import("worker_threads");
 		const nodeWorker = new Worker(new URL(workerFilePath));
 		// Web and node js have different worker interfaces, so we share a function
 		// to initialize both workers the same way.
@@ -43,7 +49,10 @@ function initDiffWorker(extensionUri: vscode.Uri): {
 		worker = nodeWorker as any;
 	}
 
-	const workerMessageHandler = new MessageHandler<ToDiffWorkerMessage, FromDiffWorkerMessage>(
+	const workerMessageHandler = new MessageHandler<
+		ToDiffWorkerMessage,
+		FromDiffWorkerMessage
+	>(
 		// Always return undefined as the diff worker
 		// does not request anything from extension host
 		async () => undefined,
@@ -52,11 +61,14 @@ function initDiffWorker(extensionUri: vscode.Uri): {
 		(message, transfer) => worker.postMessage(message, transfer!),
 	);
 
-	worker.addEventListener("message", e =>
+	worker.addEventListener("message", (e) =>
 		// e.data is used in web worker and e is used in node js worker
 		e.data
 			? workerMessageHandler.handleMessage(e.data)
 			: workerMessageHandler.handleMessage(e as any),
 	);
-	return { msgHandler: workerMessageHandler, dispose: () => worker.terminate() };
+	return {
+		msgHandler: workerMessageHandler,
+		dispose: () => worker.terminate(),
+	};
 }

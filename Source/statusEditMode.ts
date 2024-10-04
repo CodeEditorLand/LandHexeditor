@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
+
 import { HexDocumentEditOp } from "../shared/hexDocumentModel";
 import { Disposable, DisposableValue } from "./dispose";
 import { HexDocument } from "./hexDocument";
@@ -21,14 +22,19 @@ export default class StatusEditMode extends Disposable {
 		super();
 
 		this.item = this._register(
-			vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 99),
+			vscode.window.createStatusBarItem(
+				vscode.StatusBarAlignment.Right,
+				99,
+			),
 		);
 		this.item.tooltip = vscode.l10n.t("Switch Edit Mode");
 		this.item.command = "hexEditor.switchEditMode";
 
 		const trackDocument = (doc: HexDocument | undefined) => {
 			if (doc) {
-				this.docChangeListener.value = doc.onDidChangeEditMode(e => this.update(e));
+				this.docChangeListener.value = doc.onDidChangeEditMode((e) =>
+					this.update(e),
+				);
 				this.update(doc.editMode);
 				this.show();
 			} else {

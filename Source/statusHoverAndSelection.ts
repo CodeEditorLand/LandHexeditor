@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
+
 import { Disposable, DisposableValue } from "./dispose";
 import { HexDocument } from "./hexDocument";
 import { HexEditorRegistry } from "./hexEditorRegistry";
@@ -22,13 +23,20 @@ export default class StatusHoverAndSelection extends Disposable {
 
 		this.item = this._register(
 			// Primary Badge, so appears first
-			vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 101),
+			vscode.window.createStatusBarItem(
+				vscode.StatusBarAlignment.Right,
+				101,
+			),
 		);
 
 		const trackDocument = (doc: HexDocument | undefined) => {
 			if (doc) {
-				this._register(doc.onDidChangeHoverState(() => this.update(doc)));
-				this._register(doc.onDidChangeSelectionState(() => this.update(doc)));
+				this._register(
+					doc.onDidChangeHoverState(() => this.update(doc)),
+				);
+				this._register(
+					doc.onDidChangeSelectionState(() => this.update(doc)),
+				);
 				this.update(doc);
 				this.show();
 			} else {
@@ -42,8 +50,12 @@ export default class StatusHoverAndSelection extends Disposable {
 
 	update({ hoverState, selectionState }: HexDocument): void {
 		const { selected } = selectionState;
-		const nHovered = hoverState !== undefined ? numberFormat.format(hoverState) : undefined;
-		const nSelected = selected > 1 ? numberFormat.format(selected) : undefined;
+		const nHovered =
+			hoverState !== undefined
+				? numberFormat.format(hoverState)
+				: undefined;
+		const nSelected =
+			selected > 1 ? numberFormat.format(selected) : undefined;
 		if (nHovered && nSelected) {
 			this.item.text = vscode.l10n.t(
 				"{0}/0x{1} ({2}/0x{3} selected)",
@@ -53,7 +65,11 @@ export default class StatusHoverAndSelection extends Disposable {
 				selected!.toString(16).toUpperCase(),
 			);
 		} else if (nHovered) {
-			this.item.text = vscode.l10n.t("{0}/0x{1}", nHovered, hoverState!.toString(16).toUpperCase());
+			this.item.text = vscode.l10n.t(
+				"{0}/0x{1}",
+				nHovered,
+				hoverState!.toString(16).toUpperCase(),
+			);
 		} else if (nSelected) {
 			this.item.text = vscode.l10n.t(
 				"{0}/0x{1} selected",

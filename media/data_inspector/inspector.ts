@@ -18,13 +18,14 @@ let currentByteData: ArrayBuffer;
 	buildDataInspectorUi();
 
 	// Handle messages which are sent to the inspector
-	window.addEventListener("message", async e => {
+	window.addEventListener("message", async (e) => {
 		switch (e.data.method) {
 			case "update":
 				currentByteData = e.data.data;
 				populateDataInspector(
 					currentByteData,
-					(document.getElementById("endianness") as HTMLSelectElement).value === "little",
+					(document.getElementById("endianness") as HTMLSelectElement)
+						.value === "little",
 				);
 				return;
 			case "clear":

@@ -13,7 +13,9 @@ export interface ISerializedEdits {
  * problematic. This modifies it so that there's a single Uint8Array and each
  * edit points to a region in that array for transportation.
  */
-export const serializeEdits = (edits: readonly HexDocumentEdit[]): ISerializedEdits => {
+export const serializeEdits = (
+	edits: readonly HexDocumentEdit[],
+): ISerializedEdits => {
 	let allocOffset = 0;
 	const allocTable = new Uint8ArrayMap<number>();
 	const allocOrReuse = (buf: Uint8Array) => {
@@ -50,7 +52,10 @@ export const serializeEdits = (edits: readonly HexDocumentEdit[]): ISerializedEd
 };
 
 /** Reverses {@link serializeEdits} */
-export const deserializeEdits = ({ edits, data }: ISerializedEdits): HexDocumentEdit[] => {
+export const deserializeEdits = ({
+	edits,
+	data,
+}: ISerializedEdits): HexDocumentEdit[] => {
 	const unref = ({ offset, len }: { offset: number; len: number }) =>
 		data.slice(offset, offset + len);
 
@@ -60,7 +65,11 @@ export const deserializeEdits = ({ edits, data }: ISerializedEdits): HexDocument
 		} else if (edit.op === HexDocumentEditOp.Delete) {
 			return { ...edit, previous: unref(edit.previous) };
 		} else {
-			return { ...edit, previous: unref(edit.previous), value: unref(edit.value) };
+			return {
+				...edit,
+				previous: unref(edit.previous),
+				value: unref(edit.value),
+			};
 		}
 	});
 };

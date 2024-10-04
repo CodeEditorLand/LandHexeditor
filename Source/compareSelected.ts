@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+
 import { formQuery, parseQuery } from "../shared/util/uri";
 
 const uuidGenerator = () => {
@@ -10,7 +11,10 @@ const uuid = uuidGenerator();
 // Initializes our custom editor with diff capabilities
 // @see https://github.com/microsoft/vscode/issues/97683
 // @see https://github.com/microsoft/vscode/issues/138525
-export const openCompareSelected = (originalFile: vscode.Uri, modifiedFile: vscode.Uri) => {
+export const openCompareSelected = (
+	originalFile: vscode.Uri,
+	modifiedFile: vscode.Uri,
+) => {
 	const token = uuid();
 	const diffOriginalUri = originalFile.with({
 		scheme: "hexdiff",
@@ -30,5 +34,9 @@ export const openCompareSelected = (originalFile: vscode.Uri, modifiedFile: vsco
 		}),
 	});
 
-	vscode.commands.executeCommand("vscode.diff", diffOriginalUri, diffModifiedUri);
+	vscode.commands.executeCommand(
+		"vscode.diff",
+		diffOriginalUri,
+		diffModifiedUri,
+	);
 };

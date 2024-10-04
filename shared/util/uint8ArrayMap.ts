@@ -1,4 +1,5 @@
-const unwrap = <T>(fn: (() => T) | T) => (typeof fn === "function" ? (fn as () => T)() : fn);
+const unwrap = <T>(fn: (() => T) | T) =>
+	typeof fn === "function" ? (fn as () => T)() : fn;
 
 /** Map of unique values keyed by uint8 array contents */
 export class Uint8ArrayMap<T> {

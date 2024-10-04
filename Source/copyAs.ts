@@ -1,24 +1,32 @@
 import * as base64 from "js-base64";
 import * as vscode from "vscode";
-import { CopyFormat, ExtensionHostMessageHandler, MessageType } from "../shared/protocol";
+
+import {
+	CopyFormat,
+	ExtensionHostMessageHandler,
+	MessageType,
+} from "../shared/protocol";
 
 interface QuickPickCopyFormat extends vscode.QuickPickItem {
 	label: CopyFormat;
 }
 
-export const copyAsFormats: { [K in CopyFormat]: (buffer: Uint8Array, filename: string) => void } =
-	{
-		[CopyFormat.Hex]: copyAsHex,
-		[CopyFormat.Literal]: copyAsLiteral,
-		[CopyFormat.Utf8]: copyAsText,
-		[CopyFormat.C]: copyAsC,
-		[CopyFormat.Go]: copyAsGo,
-		[CopyFormat.Java]: copyAsJava,
-		[CopyFormat.JSON]: copyAsJSON,
-		[CopyFormat.Base64]: copyAsBase64,
-	};
+export const copyAsFormats: {
+	[K in CopyFormat]: (buffer: Uint8Array, filename: string) => void;
+} = {
+	[CopyFormat.Hex]: copyAsHex,
+	[CopyFormat.Literal]: copyAsLiteral,
+	[CopyFormat.Utf8]: copyAsText,
+	[CopyFormat.C]: copyAsC,
+	[CopyFormat.Go]: copyAsGo,
+	[CopyFormat.Java]: copyAsJava,
+	[CopyFormat.JSON]: copyAsJSON,
+	[CopyFormat.Base64]: copyAsBase64,
+};
 
-export const copyAs = async (messaging: ExtensionHostMessageHandler): Promise<void> => {
+export const copyAs = async (
+	messaging: ExtensionHostMessageHandler,
+): Promise<void> => {
 	const formats: QuickPickCopyFormat[] = [
 		{ label: CopyFormat.Hex },
 		{ label: CopyFormat.Literal },
@@ -30,9 +38,12 @@ export const copyAs = async (messaging: ExtensionHostMessageHandler): Promise<vo
 		{ label: CopyFormat.Base64 },
 	];
 
-	vscode.window.showQuickPick(formats).then(format => {
+	vscode.window.showQuickPick(formats).then((format) => {
 		if (format) {
-			messaging.sendEvent({ type: MessageType.TriggerCopyAs, format: format["label"] });
+			messaging.sendEvent({
+				type: MessageType.TriggerCopyAs,
+				format: format["label"],
+			});
 		}
 	});
 };
@@ -42,13 +53,17 @@ export function copyAsText(buffer: Uint8Array) {
 }
 
 export function copyAsHex(buffer: Uint8Array) {
-	const hexString = Array.from(buffer, b => b.toString(16).padStart(2, "0")).join("");
+	const hexString = Array.from(buffer, (b) =>
+		b.toString(16).padStart(2, "0"),
+	).join("");
 	vscode.env.clipboard.writeText(hexString);
 }
 
 export function copyAsLiteral(buffer: Uint8Array) {
 	let encoded: string = "";
-	const hexString = Array.from(buffer, b => b.toString(16).padStart(2, "0")).join("");
+	const hexString = Array.from(buffer, (b) =>
+		b.toString(16).padStart(2, "0"),
+	).join("");
 	const digits = hexString.match(/.{1,2}/g);
 	if (digits) {
 		encoded = "\\x" + digits.join("\\x");

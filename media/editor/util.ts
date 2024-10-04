@@ -33,7 +33,9 @@ export const isMac = navigator.userAgent.indexOf("Mac OS X") >= 0;
 /**
  * Returns truthy classes passed in as parameters joined into a class string.
  */
-export const clsx = (...classes: (string | false | undefined | null)[]): string | undefined => {
+export const clsx = (
+	...classes: (string | false | undefined | null)[]
+): string | undefined => {
 	let out: undefined | string;
 	for (const cls of classes) {
 		if (cls) {
@@ -96,7 +98,9 @@ export const clamp = (lower: number, x: number, upper: number): number =>
 export const hexDecode = (str: string): Uint8Array => {
 	const value = new Uint8Array(Math.ceil(str.length / 2));
 	for (let i = 0; i < str.length; i += 2) {
-		value[i >>> 1] = ((parseHexDigit(str[i]) || 0) << 4) | (parseHexDigit(str[i + 1]) || 0);
+		value[i >>> 1] =
+			((parseHexDigit(str[i]) || 0) << 4) |
+			(parseHexDigit(str[i + 1]) || 0);
 	}
 
 	return value;

@@ -217,8 +217,8 @@
 	"description": "%description%",
 	"devDependencies": {
 		"@types/chai": "5.0.1",
-		"@types/diff": "5.2.3",
-		"@types/node": "22.8.2",
+		"@types/diff": "6.0.0",
+		"@types/node": "22.8.4",
 		"chai": "5.1.2",
 		"esbuild": "0.24.0",
 		"esbuild-css-modules-plugin": "3.1.2",

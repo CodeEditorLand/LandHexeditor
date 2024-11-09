@@ -5,9 +5,7 @@ const getGUID = (arrayBuffer: ArrayBuffer, le: boolean) => {
 	const indices = le
 		? [3, 2, 1, 0, 5, 4, 7, 6, 8, 9, 10, 11, 12, 13, 14, 15]
 		: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
-	const parts = indices.map((index) =>
-		buf[index].toString(16).padStart(2, "0").toUpperCase(),
-	);
+	const parts = indices.map(index => buf[index].toString(16).padStart(2, "0").toUpperCase());
 	const guid = `{${parts[0]}${parts[1]}${parts[2]}${parts[3]}-${parts[4]}${parts[5]}-${parts[6]}${parts[7]}-${parts[8]}${parts[9]}-${parts[10]}${parts[11]}${parts[12]}${parts[13]}${parts[14]}${parts[15]}}`;
 
 	return guid;
@@ -205,18 +203,26 @@ const inspectTypesBuilder: IInspectableType[] = [
 	},
 ];
 
-const addTextDecoder = (encoding: string, minBytes: number) => {
+const addTextDecoder = (encoding: string, minBytes: number, bigEndianAlt?: string) => {
 	try {
 		new TextDecoder(encoding); // throws if encoding is now supported
 	} catch {
 		return;
 	}
 
+	if (bigEndianAlt) {
+		try {
+			new TextDecoder(bigEndianAlt); // throws if encoding is now supported
+		} catch {
+			bigEndianAlt = undefined;
+		}
+	}
+
 	inspectTypesBuilder.push({
 		label: encoding.toUpperCase(),
 		minBytes,
-		convert: (dv) => {
-			const utf8 = new TextDecoder(encoding).decode(dv.buffer);
+		convert: (dv, le) => {
+			const utf8 = new TextDecoder(!le && bigEndianAlt ? bigEndianAlt : encoding).decode(dv.buffer);
 			for (const char of utf8) return char;
 			return utf8;
 		},
@@ -225,7 +231,7 @@ const addTextDecoder = (encoding: string, minBytes: number) => {
 
 addTextDecoder("ascii", 1);
 addTextDecoder("utf-8", 1);
-addTextDecoder("utf-16", 2);
+addTextDecoder("utf-16", 2, "utf-16be");
 addTextDecoder("gb18030", 2);
 addTextDecoder("big5", 2);
 addTextDecoder("iso-2022-kr", 2);

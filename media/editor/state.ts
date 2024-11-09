@@ -35,9 +35,15 @@ const acquireVsCodeApi: () => {
 
 export const vscode = acquireVsCodeApi?.();
 
-type HandlerFn = (
-	message: ToWebviewMessage,
-) => Promise<FromWebviewMessage> | undefined;
+export const setWebviewState = (key: string, value: unknown) => {
+	vscode.setState?.({ ...(vscode.getState?.() ?? {}), [key]: value });
+};
+
+export const getWebviewState = <T>(key: string, defaultValue: T): T => {
+	return (vscode.getState?.() ?? {})[key] ?? defaultValue;
+};
+
+type HandlerFn = (message: ToWebviewMessage) => Promise<FromWebviewMessage> | undefined;
 
 const handles: { [T in ToWebviewMessage["type"]]?: HandlerFn | HandlerFn[] } =
 	{};
@@ -207,6 +213,11 @@ export const columnWidth = selector({
 	get: ({ get }) => get(editorSettings).columnWidth,
 });
 
+export const copyType = selector({
+	key: "copyType",
+	get: ({ get }) => get(editorSettings).copyType,
+});
+
 export const showDecodedText = selector({
 	key: "showDecodedText",
 	get: ({ get }) => get(editorSettings).showDecodedText,
@@ -294,6 +305,7 @@ export const offset = atom({
 
 			registerHandler(MessageType.GoToOffset, (msg) => {
 				const s = fx.getLoadable(columnWidth).getValue();
+				vscode.setState({ ...vscode.getState(), offset: msg.offset });
 				fx.setSelf(startOfRowContainingByte(msg.offset, s));
 			});
 		},
@@ -510,20 +522,10 @@ export const decoratorsPage = selectorFamily({
 				return [];
 			}
 			const pageSize = get(dataPageSize);
-			const searcherByEnd = binarySearch<HexDecorator>(
-				(decorator) => decorator.range.end,
-			);
-			const startIndex = searcherByEnd(
-				pageSize * pageNumber,
-				allDecorators,
-			);
-			const searcherByStart = binarySearch<HexDecorator>(
-				(d) => d.range.start,
-			);
-			const endIndex = searcherByStart(
-				pageSize * pageNumber + pageSize + 1,
-				allDecorators,
-			);
+			const searcherByEnd = binarySearch<HexDecorator>(decorator => decorator.range.end);
+			const startIndex = searcherByEnd(pageSize * pageNumber, allDecorators);
+			const searcherByStart = binarySearch<HexDecorator>(d => d.range.start);
+			const endIndex = searcherByStart(pageSize * pageNumber + pageSize + 1, allDecorators);
 			return allDecorators.slice(startIndex, endIndex);
 		},
 });

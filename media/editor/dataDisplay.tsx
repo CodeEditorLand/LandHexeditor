@@ -138,6 +138,7 @@ export const DataDisplay: React.FC = () => {
 	const columnWidth = useRecoilValue(select.columnWidth);
 	const dimensions = useRecoilValue(select.dimensions);
 	const fileSize = useRecoilValue(select.fileSize);
+	const copyType = useRecoilValue(select.copyType);
 	const allEditTimeline = useRecoilValue(select.allEditTimeline);
 	const unsavedEditIndex = useRecoilValue(select.unsavedEditIndex);
 	const ctx = useDisplayContext();
@@ -352,10 +353,8 @@ export const DataDisplay: React.FC = () => {
 		if (ctx.focusedElement) {
 			select.messageHandler.sendEvent({
 				type: MessageType.DoCopy,
-				selections: ctx.selection.map((r) => [r.start, r.end]),
-				format: ctx.focusedElement.char
-					? CopyFormat.Utf8
-					: CopyFormat.Base64,
+				selections: ctx.selection.map(r => [r.start, r.end]),
+				format: ctx.focusedElement.char ? CopyFormat.Utf8 : copyType,
 			});
 		}
 	});
@@ -386,11 +385,8 @@ const DataRows: React.FC = () => {
 	const endPageStartsAt = endPageNo * dataPageSize;
 
 	const rows: React.ReactChild[] = [];
-	for (
-		let i = startPageStartsAt;
-		i <= endPageStartsAt && i < fileSize;
-		i += dataPageSize
-	) {
+	// i === startPageStartsAt so that we always show at least 1 page, allowing users to append to empty files (#534)
+	for (let i = startPageStartsAt; i <= endPageStartsAt && (i === startPageStartsAt || i < fileSize); i += dataPageSize) {
 		rows.push(
 			<DataPage
 				key={i}

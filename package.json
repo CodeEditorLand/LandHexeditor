@@ -239,7 +239,7 @@
 		"chai": "^5.1.2",
 		"esbuild": "^0.24.0",
 		"esbuild-css-modules-plugin": "^3.1.2",
-		"esbuild-plugin-svgr": "^3.0.0"
+		"esbuild-plugin-svgr": "^3.1.0"
 	},
 	"displayName": "%name%",
 	"icon": "icon.png",

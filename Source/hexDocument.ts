@@ -34,6 +34,7 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 		diffModelBuilder: HexDiffModelBuilder | undefined,
 	): Promise<{ document: HexDocument; accessor: FileAccessor }> {
 		const accessor = await accessFile(uri, untitledDocumentData);
+
 		const model = new HexDocumentModel({
 			accessor,
 			isFiniteSize: true,
@@ -49,6 +50,7 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 		});
 
 		const queries = parseQuery(uri.query);
+
 		const baseAddress: number = queries.baseAddress
 			? HexDocument.parseHexOrDecInt(queries.baseAddress)
 			: 0;
@@ -69,6 +71,7 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 			(vscode.workspace
 				.getConfiguration()
 				.get("hexeditor.maxFileSize") as number) * 1000000;
+
 		const isLargeFile =
 			!backupId &&
 			!accessor.supportsIncremetalAccess &&
@@ -167,11 +170,14 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 		length: number,
 	): Promise<Uint8Array> {
 		const target = new Uint8Array(length);
+
 		let soFar = 0;
+
 		for await (const chunk of this.model.readWithUnsavedEdits(offset)) {
 			const read = Math.min(chunk.length, target.length - soFar);
 			target.set(chunk.subarray(0, read), soFar);
 			soFar += read;
+
 			if (soFar === length) {
 				return target;
 			}
@@ -188,7 +194,9 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 		length: number,
 	): Promise<Uint8Array> {
 		const target = new Uint8Array(length);
+
 		const read = await this.model.readInto(offset, target);
+
 		return read === length ? target : target.slice(0, read);
 	}
 
@@ -321,6 +329,7 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 		data: Uint8Array,
 	): Promise<HexDocumentEditReference> {
 		const previous = await this.readBufferWithEdits(offset, data.length);
+
 		if (previous.length === data.length) {
 			return this.makeEdits([
 				{
@@ -426,6 +435,7 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 	 */
 	private static parseHexOrDecInt(str: string): number {
 		str = str.toLowerCase();
+
 		return str.startsWith("0x")
 			? parseInt(str.substring(2), 16)
 			: parseInt(str, 10);

@@ -50,12 +50,15 @@ export default class StatusHoverAndSelection extends Disposable {
 
 	update({ hoverState, selectionState }: HexDocument): void {
 		const { selected } = selectionState;
+
 		const nHovered =
 			hoverState !== undefined
 				? numberFormat.format(hoverState)
 				: undefined;
+
 		const nSelected =
 			selected > 1 ? numberFormat.format(selected) : undefined;
+
 		if (nHovered && nSelected) {
 			this.item.text = vscode.l10n.t(
 				"{0}/0x{1} ({2}/0x{3} selected)",

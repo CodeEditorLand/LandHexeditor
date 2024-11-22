@@ -27,7 +27,9 @@ export class HexDiffModel {
 			if (this.decorators === undefined) {
 				//TODO: Add a warning if the file sizes are too large?
 				const oSize = await this.originalModel.sizeWithEdits();
+
 				const mSize = await this.modifiedModel.sizeWithEdits();
+
 				if (oSize === undefined || mSize === undefined) {
 					throw new Error(
 						vscode.l10n.t(
@@ -37,9 +39,11 @@ export class HexDiffModel {
 				}
 
 				const oArray = new Uint8Array(oSize);
+
 				const mArray = new Uint8Array(mSize);
 				await this.originalModel.readInto(0, oArray);
 				await this.modifiedModel.readInto(0, mArray);
+
 				const decorators =
 					await this.messageHandler.sendRequest<DiffDecoratorResponseMessage>(
 						{
@@ -77,6 +81,7 @@ export class HexDiffModel {
 			private readonly messageHandler: DiffExtensionHostMessageHandler,
 		) {
 			let promise: Promise<HexDocumentModel>;
+
 			let res: (model: HexDocumentModel) => void;
 
 			promise = new Promise<HexDocumentModel>(
@@ -106,6 +111,7 @@ export class HexDiffModel {
 				this.original.promise,
 				this.modified.promise,
 			]);
+
 			if (this.built === undefined) {
 				this.built = new HexDiffModel(
 					original,

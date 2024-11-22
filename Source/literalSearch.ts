@@ -59,6 +59,7 @@ export class LiteralSearch {
 
 	push(chunk: Uint8Array): void {
 		const { needleLen, buffer } = this;
+
 		for (let i = 0; i < chunk.length; i++) {
 			buffer[this.index++ % needleLen] = chunk[i];
 			this.usableBuffer++;
@@ -68,15 +69,19 @@ export class LiteralSearch {
 
 	private attemptMatch() {
 		const { needle, needleLen, buffer, index, equivalencyTable } = this;
+
 		if (this.usableBuffer < needleLen) {
 			return;
 		}
 
 		let k = 0;
+
 		for (let i = 0; i < needle.length; i++) {
 			const chunk = needle[i];
+
 			if (chunk === Wildcard) {
 				k++;
+
 				continue;
 			}
 

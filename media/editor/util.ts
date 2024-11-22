@@ -37,6 +37,7 @@ export const clsx = (
 	...classes: (string | false | undefined | null)[]
 ): string | undefined => {
 	let out: undefined | string;
+
 	for (const cls of classes) {
 		if (cls) {
 			out = out ? `${out} ${cls}` : cls;
@@ -69,6 +70,7 @@ export function generateCharacterRanges(): Range[] {
 	const ranges: Range[] = [];
 	ranges.push(new Range(0, 32));
 	ranges.push(new Range(127));
+
 	return ranges;
 }
 
@@ -97,6 +99,7 @@ export const clamp = (lower: number, x: number, upper: number): number =>
  */
 export const hexDecode = (str: string): Uint8Array => {
 	const value = new Uint8Array(Math.ceil(str.length / 2));
+
 	for (let i = 0; i < str.length; i += 2) {
 		value[i >>> 1] =
 			((parseHexDigit(str[i]) || 0) << 4) |
@@ -120,48 +123,70 @@ export const parseHexDigit = (s: string): number | undefined => {
 	switch (s) {
 		case "0":
 			return 0;
+
 		case "1":
 			return 1;
+
 		case "2":
 			return 2;
+
 		case "3":
 			return 3;
+
 		case "4":
 			return 4;
+
 		case "5":
 			return 5;
+
 		case "6":
 			return 6;
+
 		case "7":
 			return 7;
+
 		case "8":
 			return 8;
+
 		case "9":
 			return 9;
+
 		case "a":
 			return 10;
+
 		case "A":
 			return 10;
+
 		case "b":
 			return 11;
+
 		case "B":
 			return 11;
+
 		case "c":
 			return 12;
+
 		case "C":
 			return 12;
+
 		case "d":
 			return 13;
+
 		case "D":
 			return 13;
+
 		case "e":
 			return 14;
+
 		case "E":
 			return 14;
+
 		case "f":
 			return 15;
+
 		case "F":
 			return 15;
+
 		default:
 			return undefined;
 	}
@@ -170,6 +195,7 @@ export const parseHexDigit = (s: string): number | undefined => {
 /** Calculates the dimensions of the browser scrollbar */
 export const getScrollDimensions = (() => {
 	let value: { width: number; height: number } | undefined;
+
 	return () => {
 		if (value !== undefined) {
 			return value;
@@ -177,11 +203,16 @@ export const getScrollDimensions = (() => {
 
 		const el = document.createElement("div");
 		el.classList.add(style.scrollbar);
+
 		document.body.appendChild(el);
+
 		const width = el.offsetWidth - el.clientWidth;
+
 		const height = el.offsetHeight - el.clientHeight;
+
 		document.body.removeChild(el);
 		value = { width, height };
+
 		return value;
 	};
 })();

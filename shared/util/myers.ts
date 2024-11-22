@@ -13,6 +13,7 @@ export class MyersDiff {
 			original as any,
 			modified as any,
 		);
+
 		return changes;
 	}
 
@@ -21,9 +22,12 @@ export class MyersDiff {
 			original: HexDecorator[];
 			modified: HexDecorator[];
 		} = { original: [], modified: [] };
+
 		let offset = 0;
+
 		for (const change of script) {
 			const r = new Range(offset, offset + change.count!);
+
 			if (change.removed) {
 				out.original.push({
 					type: HexDecoratorType.Delete,

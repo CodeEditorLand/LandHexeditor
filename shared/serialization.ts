@@ -17,11 +17,14 @@ export const serializeEdits = (
 	edits: readonly HexDocumentEdit[],
 ): ISerializedEdits => {
 	let allocOffset = 0;
+
 	const allocTable = new Uint8ArrayMap<number>();
+
 	const allocOrReuse = (buf: Uint8Array) => {
 		const offset = allocTable.set(buf, () => {
 			const offset = allocOffset;
 			allocOffset += buf.length;
+
 			return offset;
 		});
 
@@ -29,6 +32,7 @@ export const serializeEdits = (
 	};
 
 	const newEdits: unknown[] = [];
+
 	for (const edit of edits) {
 		if (edit.op === HexDocumentEditOp.Insert) {
 			newEdits.push({ ...edit, value: allocOrReuse(edit.value) });
@@ -44,6 +48,7 @@ export const serializeEdits = (
 	}
 
 	const data = new Uint8Array(allocOffset);
+
 	for (const [buf, offset] of allocTable.entries()) {
 		data.set(buf, offset);
 	}

@@ -12,7 +12,9 @@ function onMessage(
 	switch (message.type) {
 		case DiffMessageType.DiffDecoratorRequest:
 			const script = MyersDiff.lcs(message.original, message.modified);
+
 			const decorators = MyersDiff.toDecorator(script);
+
 			return {
 				type: DiffMessageType.DiffDecoratorResponse,
 				original: decorators.original,
@@ -37,6 +39,7 @@ try {
 	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const { parentPort } =
 		require("worker_threads") as typeof import("worker_threads");
+
 	if (parentPort) {
 		const messageHandler = new MessageHandler<
 			FromDiffWorkerMessage,

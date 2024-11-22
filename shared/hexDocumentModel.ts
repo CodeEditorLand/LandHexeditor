@@ -169,6 +169,7 @@ export class HexDocumentModel {
 		}
 
 		const diskSize = await this.getSizeInner();
+
 		if (diskSize === undefined) {
 			return undefined;
 		}
@@ -185,6 +186,7 @@ export class HexDocumentModel {
 		}
 
 		const diskSize = await this.getSizeInner();
+
 		if (diskSize === undefined) {
 			return undefined;
 		}
@@ -266,6 +268,7 @@ export class HexDocumentModel {
 	 */
 	public save(): Promise<void> {
 		const toSave = this._edits.slice(this.unsavedEditIndex);
+
 		if (toSave.length === 0) {
 			return Promise.resolve();
 		}
@@ -320,6 +323,7 @@ export class HexDocumentModel {
 		this._edits.push(...edits);
 		this.getAllEditTimeline.forget();
 		this.getUnsavedEditTimeline.forget();
+
 		return {
 			undo: () => {
 				// If the file wasn't saved, just removed the pending edits.
@@ -331,12 +335,14 @@ export class HexDocumentModel {
 				}
 				this.getAllEditTimeline.forget();
 				this.getUnsavedEditTimeline.forget();
+
 				return this._edits;
 			},
 			redo: () => {
 				this._edits.push(...edits);
 				this.getAllEditTimeline.forget();
 				this.getUnsavedEditTimeline.forget();
+
 				return this._edits;
 			},
 		};
@@ -374,14 +380,17 @@ export async function* readUsingRanges(
 	chunkSize = 1024,
 ): AsyncIterableIterator<Uint8Array> {
 	const buf = new Uint8Array(chunkSize);
+
 	for (let i = 0; i < ranges.length; i++) {
 		const range = ranges[i];
+
 		if (range.op === EditRangeOp.Skip) {
 			continue;
 		}
 
 		if (range.op === EditRangeOp.EmptyInsert) {
 			const readLast = range.offset + range.length - fromOffset;
+
 			if (readLast <= 0) {
 				continue;
 			}
@@ -389,6 +398,7 @@ export async function* readUsingRanges(
 				readLast < range.length
 					? buf.fill(0, -readLast).subarray(-readLast)
 					: buf.fill(0, -range.length).subarray(-range.length);
+
 			if (toYield.length > 0) {
 				yield toYield;
 			}
@@ -397,6 +407,7 @@ export async function* readUsingRanges(
 
 		if (range.op === EditRangeOp.Insert) {
 			const readLast = range.offset + range.value.length - fromOffset;
+
 			if (readLast <= 0) {
 				continue;
 			}
@@ -405,6 +416,7 @@ export async function* readUsingRanges(
 				readLast < range.value.length
 					? range.value.subarray(-readLast)
 					: range.value;
+
 			if (toYield.length > 0) {
 				yield toYield;
 			}
@@ -416,12 +428,15 @@ export async function* readUsingRanges(
 			range.roffset +
 			(i + 1 < ranges.length ? ranges[i + 1].offset : Infinity) -
 			range.offset;
+
 		let roffset = range.roffset + Math.max(0, fromOffset - range.offset);
+
 		while (roffset < until) {
 			const bytes = await readable.read(
 				roffset,
 				buf.subarray(0, Math.min(buf.length, until - roffset)),
 			);
+
 			if (bytes === 0) {
 				break; // EOF
 			}
@@ -508,11 +523,13 @@ export const buildEditTimeline = (
 	};
 
 	const searcher = binarySearch<EditRange>((r) => r.offset);
+
 	let sizeDelta = 0;
 
 	/** Shifts the offset of all ranges after i by the amount */
 	const shiftAfter = (i: number, byAmount: number) => {
 		sizeDelta += byAmount;
+
 		for (; i < ranges.length; i++) {
 			ranges[i].offset += byAmount;
 		}
@@ -520,7 +537,9 @@ export const buildEditTimeline = (
 
 	for (let editIndex = 0; editIndex < edits.length; editIndex++) {
 		const edit = edits[editIndex];
+
 		let i = searcher(edit.offset, ranges);
+
 		if (i === ranges.length || ranges[i].offset > edit.offset) {
 			i--;
 		}
@@ -569,7 +588,9 @@ export const buildEditTimeline = (
 				split,
 				edit.offset - split.offset,
 			);
+
 			let until = searcher(edit.offset + edit.previous.length, ranges);
+
 			if (until === ranges.length || ranges[until].offset > edit.offset) {
 				until--;
 			}

@@ -29,7 +29,9 @@ import { clamp } from "./util";
 
 const acquireVsCodeApi: () => {
 	postMessage(msg: unknown): void;
+
 	getState(): any;
+
 	setState(value: any): void;
 } = (globalThis as any).acquireVsCodeApi;
 
@@ -55,7 +57,9 @@ export const registerHandler = <T extends ToWebviewMessage["type"]>(
 	) => Promise<FromWebviewMessage> | void,
 ): void => {
 	const cast = handler as HandlerFn;
+
 	const prev = handles[typ];
+
 	if (!prev) {
 		handles[typ] = cast;
 	} else if (typeof prev === "function") {
@@ -71,6 +75,7 @@ export const messageHandler = new MessageHandler<
 >(
 	async (msg) => {
 		const h = handles[msg.type];
+
 		if (!h) {
 			console.warn("unhandled message", msg);
 		} else if (typeof h === "function") {
@@ -105,7 +110,9 @@ export const dataInspectorLocation = selector({
 	key: "dataInspectorSide",
 	get: ({ get }) => {
 		const settings = get(editorSettings);
+
 		const d = get(dimensions);
+
 		if (settings.inspectorType === InspectorLocation.Sidebar) {
 			return InspectorLocation.Sidebar;
 		}
@@ -162,6 +169,7 @@ const diskFileSize = atom({
 			});
 			registerHandler(MessageType.Saved, () => {
 				const size = fx.getLoadable(diskFileSize).getValue();
+
 				if (size === undefined) {
 					return;
 				}
@@ -179,7 +187,9 @@ export const fileSize = selector({
 	key: "fileSize",
 	get: ({ get }) => {
 		const initial = get(diskFileSize);
+
 		const sizeDelta = get(unsavedAndDecoratorEditTimeline).sizeDelta;
+
 		return initial === undefined ? initial : initial + sizeDelta;
 	},
 });
@@ -333,6 +343,7 @@ export const dataPageSize = selector({
 	key: "dataPageSize",
 	get: ({ get }) => {
 		const colWidth = get(columnWidth);
+
 		const pageSize = get(readyQuery).pageSize;
 		// Make sure the page size is a multiple of column width, since rendering
 		// happens in page chunks.
@@ -353,7 +364,9 @@ export const scrollBounds = atom<Range>({
 				get(dimensions),
 				get(columnWidth),
 			);
+
 			const offset = get(initialOffset);
+
 			const scrollEnd = get(fileSize) ?? offset + windowSize * 2;
 
 			return new Range(
@@ -472,19 +485,26 @@ export const editedDataPages = selectorFamily({
 		(pageNumber: number) =>
 		async ({ get }) => {
 			const pageSize = get(dataPageSize);
+
 			const { ranges } = get(unsavedAndDecoratorEditTimeline);
+
 			const target = new Uint8Array(pageSize);
+
 			const it = readUsingRanges(
 				{
 					read: (offset, target) => {
 						const pageNo = Math.floor(offset / pageSize);
+
 						const page = get(rawDataPages(pageNo));
+
 						const start = offset - pageNo * pageSize;
+
 						const len = Math.min(
 							page.byteLength - start,
 							target.byteLength,
 						);
 						target.set(page.subarray(start, start + len), 0);
+
 						return Promise.resolve(len);
 					},
 				},
@@ -494,10 +514,12 @@ export const editedDataPages = selectorFamily({
 			);
 
 			let soFar = 0;
+
 			for await (const chunk of it) {
 				const read = Math.min(chunk.length, target.length - soFar);
 				target.set(chunk.subarray(0, read), soFar);
 				soFar += read;
+
 				if (soFar === pageSize) {
 					return target;
 				}
@@ -518,14 +540,20 @@ export const decoratorsPage = selectorFamily({
 		(pageNumber: number) =>
 		async ({ get }) => {
 			const allDecorators = get(decorators);
+
 			if (allDecorators.length === 0) {
 				return [];
 			}
 			const pageSize = get(dataPageSize);
+
 			const searcherByEnd = binarySearch<HexDecorator>(decorator => decorator.range.end);
+
 			const startIndex = searcherByEnd(pageSize * pageNumber, allDecorators);
+
 			const searcherByStart = binarySearch<HexDecorator>(d => d.range.start);
+
 			const endIndex = searcherByStart(pageSize * pageNumber + pageSize + 1, allDecorators);
+
 			return allDecorators.slice(startIndex, endIndex);
 		},
 });
@@ -538,6 +566,7 @@ const rawDataPages = selectorFamily({
 			get(reloadGeneration); // used to trigger invalidation
 			get(unsavedEditIndex); // used to trigger invalidation when the user saves
 			const pageSize = get(dataPageSize);
+
 			const response =
 				await messageHandler.sendRequest<ReadRangeResponseMessage>({
 					type: MessageType.ReadRangeRequest,

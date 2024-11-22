@@ -53,6 +53,7 @@ export default class StatusEditMode extends Disposable {
 			this.item.text = vscode.l10n.t("Replace");
 		} else {
 			this.item.hide();
+
 			return;
 		}
 		this.item.show();

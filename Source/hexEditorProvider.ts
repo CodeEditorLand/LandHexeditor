@@ -98,11 +98,13 @@ export class HexEditorProvider
 			this._telemetryReporter,
 			diff.builder,
 		);
+
 		const disposables: vscode.Disposable[] = [];
 		disposables.push(diff);
 		disposables.push(
 			document.onDidRevert(async () => {
 				const replaceFileSize = (await document.size()) ?? null;
+
 				for (const messaging of this._registry.getMessaging(document)) {
 					messaging.sendEvent({
 						type: MessageType.SetEdits,
@@ -124,11 +126,13 @@ export class HexEditorProvider
 		);
 
 		const overwrite = vscode.l10n.t("Overwrite");
+
 		const onDidChange = async () => {
 			if (document.isSynced) {
 				// If we executed a save recently the change was probably caused by us
 				// we shouldn't trigger a revert to resync the document as it is already sync
 				const recentlySaved = Date.now() - document.lastSave < 5_000;
+
 				if (!recentlySaved) {
 					document.revert();
 				}
@@ -138,12 +142,15 @@ export class HexEditorProvider
 			const message = vscode.l10n.t(
 				"This file has changed on disk, but you have unsaved changes. Saving now will overwrite the file on disk with your changes.",
 			);
+
 			const revert = vscode.l10n.t("Revert");
+
 			const selected = await vscode.window.showWarningMessage(
 				message,
 				overwrite,
 				revert,
 			);
+
 			if (selected === overwrite) {
 				vscode.commands.executeCommand("workbench.action.files.save");
 			} else if (selected === revert) {
@@ -250,6 +257,7 @@ export class HexEditorProvider
 				"editor.js",
 			),
 		);
+
 		const styleUri = webview.asWebviewUri(
 			vscode.Uri.joinPath(
 				this._context.extensionUri,
@@ -260,6 +268,7 @@ export class HexEditorProvider
 
 		// Use a nonce to allow certain scripts to be run
 		const nonce = randomString();
+
 		const strings: ILocalizedStrings = {
 			pasteAs: vscode.l10n.t("Paste as"),
 			pasteMode: vscode.l10n.t("Paste mode"),
@@ -334,6 +343,7 @@ export class HexEditorProvider
 
 	private readCodeSettings(): ICodeSettings {
 		const editorConfig = vscode.workspace.getConfiguration("editor");
+
 		return {
 			scrollBeyondLastLine: editorConfig.get(
 				"scrollBeyondLastLine",
@@ -344,7 +354,9 @@ export class HexEditorProvider
 
 	private readEditorSettings(): IEditorSettings {
 		const config = vscode.workspace.getConfiguration("hexeditor");
+
 		const settings: IEditorSettings = { ...defaultEditorSettings };
+
 		for (const key of editorSettingsKeys) {
 			if (config.has(key)) {
 				(settings as any)[key] = config.get(key);
@@ -355,8 +367,10 @@ export class HexEditorProvider
 
 	private writeEditorSettings(settings: IEditorSettings) {
 		const config = vscode.workspace.getConfiguration("hexeditor");
+
 		for (const key of editorSettingsKeys) {
 			const existing = config.inspect(key);
+
 			const target = !existing
 				? vscode.ConfigurationTarget.Global
 				: existing.workspaceFolderValue !== undefined
@@ -390,28 +404,37 @@ export class HexEditorProvider
 					editMode: document.editMode,
 					decorators: await document.readDecorators(),
 				};
+
 			case MessageType.SetSelectedCount:
 				document.selectionState = message;
+
 				break;
+
 			case MessageType.SetHoveredByte:
 				document.hoverState = message.hovered;
+
 				break;
+
 			case MessageType.ReadRangeRequest:
 				const data = await document.readBuffer(
 					message.offset,
 					message.bytes,
 				);
+
 				return {
 					type: MessageType.ReadRangeResponse,
 					data: getCorrectArrayBuffer(data),
 				};
+
 			case MessageType.MakeEdits:
 				this.publishEdit(
 					messaging,
 					document,
 					document.makeEdits(deserializeEdits(message.edits)),
 				);
+
 				return;
+
 			case MessageType.DoPaste:
 				this.publishEdit(
 					messaging,
@@ -424,13 +447,16 @@ export class HexEditorProvider
 					type: MessageType.SetEdits,
 					edits: serializeEdits(document.edits),
 				});
+
 				return;
+
 			case MessageType.DoCopy: {
 				const parts = await Promise.all(
 					message.selections
 						.sort((a, b) => a[0] - b[0])
 						.map((s) => document.readBuffer(s[0], s[1] - s[0])),
 				);
+
 				const flatParts = flattenBuffers(parts);
 
 				const filenameWoutExt = getBaseName(document.uri.path);
@@ -445,6 +471,7 @@ export class HexEditorProvider
 						document.readBufferWithEdits(d.start, d.end - d.start),
 					),
 				);
+
 				const edits = bytes.map(
 					(e, i): HexDocumentEdit => ({
 						op: HexDocumentEditOp.Delete,
@@ -462,13 +489,17 @@ export class HexEditorProvider
 					document,
 					document.makeEdits(edits),
 				);
+
 				return { type: MessageType.DeleteAccepted };
 			}
 			case MessageType.CancelSearch:
 				document.searchProvider.cancel();
+
 				return;
+
 			case MessageType.SearchRequest:
 				let request: ISearchRequest;
+
 				if ("re" in message.query) {
 					request = new RegexSearchRequest(
 						document,
@@ -485,12 +516,16 @@ export class HexEditorProvider
 					);
 				}
 				document.searchProvider.start(messaging, request);
+
 				return;
+
 			case MessageType.ClearDataInspector:
 				this._dataInspectorView.handleEditorMessage({
 					method: "reset",
 				});
+
 				break;
+
 			case MessageType.SetInspectByte:
 				this._dataInspectorView.handleEditorMessage({
 					method: "update",
@@ -498,9 +533,12 @@ export class HexEditorProvider
 						await document.readBufferWithEdits(message.offset, 8),
 					),
 				});
+
 				break;
+
 			case MessageType.UpdateEditorSettings:
 				this.writeEditorSettings(message.editorSettings);
+
 				break;
 		}
 	}

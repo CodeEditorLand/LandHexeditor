@@ -74,6 +74,7 @@ export class HexEditorRegistry extends Disposable {
 	/** Registers an opened hex document. */
 	public add(document: HexDocument, messaging: ExtensionHostMessageHandler) {
 		let collection = this.docs.get(document);
+
 		if (collection) {
 			collection.add(messaging);
 		} else {
@@ -88,6 +89,7 @@ export class HexEditorRegistry extends Disposable {
 		return {
 			dispose: () => {
 				collection!.delete(messaging);
+
 				if (collection!.size === 0) {
 					this.docs.delete(document);
 				}
@@ -101,6 +103,7 @@ export class HexEditorRegistry extends Disposable {
 		dispose: () => void;
 	} {
 		const { token } = parseQuery(uri.query);
+
 		if (token === undefined) {
 			return { builder: undefined, dispose: () => {} };
 		}
@@ -122,6 +125,7 @@ export class HexEditorRegistry extends Disposable {
 			builder: builder.value,
 			dispose: () => {
 				builder.refCount--;
+
 				if (builder.refCount === 0) {
 					this.diffsBuilder.delete(token);
 				}
@@ -131,13 +135,17 @@ export class HexEditorRegistry extends Disposable {
 
 	private onChangedTabs() {
 		const input = vscode.window.tabGroups.activeTabGroup.activeTab?.input;
+
 		const uri =
 			input instanceof vscode.TabInputCustom ? input.uri : undefined;
+
 		let next: HexDocument | undefined = undefined;
+
 		if (uri) {
 			for (const doc of this.docs.keys()) {
 				if (doc.uri.toString() === uri.toString()) {
 					next = doc;
+
 					break;
 				}
 			}

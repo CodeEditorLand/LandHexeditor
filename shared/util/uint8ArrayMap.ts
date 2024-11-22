@@ -7,10 +7,13 @@ export class Uint8ArrayMap<T> {
 
 	public set(buf: Uint8Array, value: (() => T) | T): T {
 		const hash = doHash(buf);
+
 		const existing = this.table.get(hash);
+
 		if (!existing) {
 			const rec = { buf, value: unwrap(value) };
 			this.table.set(hash, [rec]);
+
 			return rec.value;
 		}
 
@@ -22,6 +25,7 @@ export class Uint8ArrayMap<T> {
 
 		const rec = { buf, value: unwrap(value) };
 		existing.push(rec);
+
 		return rec.value;
 	}
 
@@ -66,6 +70,7 @@ function arrEquals(a: Uint8Array, b: Uint8Array) {
 /** Simple hash from vscode core */
 function doHash(b: Uint8Array, hashVal = 0) {
 	hashVal = numberHash(149417, hashVal);
+
 	for (let i = 0, length = b.length; i < length; i++) {
 		hashVal = numberHash(b[i], hashVal);
 	}

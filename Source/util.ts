@@ -5,8 +5,10 @@ import { l10n, window } from "vscode";
 
 export function randomString(len = 32): string {
 	let text = "";
+
 	const possible =
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
 	for (let i = 0; i < len; i++) {
 		text += possible.charAt(Math.floor(Math.random() * possible.length));
 	}
@@ -48,12 +50,15 @@ export const utf8Length = (str: string): number => {
 
 export const flattenBuffers = (buffers: readonly Uint8Array[]): Uint8Array => {
 	let size = 0;
+
 	for (const buffer of buffers) {
 		size += buffer.byteLength;
 	}
 
 	const target = new Uint8Array(size);
+
 	let offset = 0;
+
 	for (const buffer of buffers) {
 		target.set(buffer, offset);
 		offset += buffer.byteLength;
@@ -65,5 +70,6 @@ export const flattenBuffers = (buffers: readonly Uint8Array[]): Uint8Array => {
 export const getBaseName = (path: string): string => {
 	let filename = path.split("/").pop()!;
 	filename = filename.substring(0, filename.lastIndexOf(".")) || filename;
+
 	return filename.replace(/[^a-z0-9]/gi, "");
 };

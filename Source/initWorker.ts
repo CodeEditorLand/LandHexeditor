@@ -13,6 +13,7 @@ export function prepareLazyInitDiffWorker(
 	addDispose: (dispose: vscode.Disposable) => void,
 ) {
 	let messageHandler: DiffExtensionHostMessageHandler;
+
 	return () => {
 		if (!messageHandler) {
 			const { msgHandler, dispose } = initDiffWorker(extensionUri);
@@ -29,6 +30,7 @@ function initDiffWorker(extensionUri: vscode.Uri): {
 	dispose: () => void;
 } {
 	let worker: Worker;
+
 	const workerFilePath = vscode.Uri.joinPath(
 		extensionUri,
 		"dist",
@@ -41,6 +43,7 @@ function initDiffWorker(extensionUri: vscode.Uri): {
 		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		const { Worker } =
 			require("worker_threads") as typeof import("worker_threads");
+
 		const nodeWorker = new Worker(new URL(workerFilePath));
 		// Web and node js have different worker interfaces, so we share a function
 		// to initialize both workers the same way.
@@ -67,6 +70,7 @@ function initDiffWorker(extensionUri: vscode.Uri): {
 			? workerMessageHandler.handleMessage(e.data)
 			: workerMessageHandler.handleMessage(e as any),
 	);
+
 	return {
 		msgHandler: workerMessageHandler,
 		dispose: () => worker.terminate(),

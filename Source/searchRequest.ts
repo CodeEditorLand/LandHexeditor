@@ -59,13 +59,16 @@ class ResultsCollector {
 	/** Returns the results to yield right now, if any */
 	public toYield(): SearchResultsWithProgress | undefined {
 		const now = Date.now();
+
 		if (
 			now - this.lastYieldedTime >
 			ResultsCollector.targetUpdateInterval
 		) {
 			this.lastYieldedTime = now;
+
 			const results = this.results;
 			this.results = [];
+
 			return {
 				progress: this.filesize ? this.fileOffset / this.filesize : 0,
 				results,
@@ -100,6 +103,7 @@ export class LiteralSearchRequest implements ISearchRequest {
 	/** @inheritdoc */
 	public async *search(): AsyncIterableIterator<SearchResultsWithProgress> {
 		const { isCaseSensitive, query, document, cap } = this;
+
 		const collector = new ResultsCollector(await document.size(), cap);
 
 		const streamSearch = new LiteralSearch(
@@ -111,6 +115,7 @@ export class LiteralSearchRequest implements ISearchRequest {
 		for await (const chunk of document.readWithUnsavedEdits(0)) {
 			if (this.cancelled || collector.capped) {
 				yield collector.final();
+
 				return;
 			}
 
@@ -118,6 +123,7 @@ export class LiteralSearchRequest implements ISearchRequest {
 			collector.fileOffset += chunk.length;
 
 			const toYield = collector.toYield();
+
 			if (toYield) {
 				yield toYield;
 			}
@@ -162,24 +168,31 @@ export class RegexSearchRequest implements ISearchRequest {
 	/** @inheritdoc */
 	public async *search(): AsyncIterableIterator<SearchResultsWithProgress> {
 		let str = "";
+
 		let strStart = 0;
 
 		const { re, document } = this;
+
 		const decoder = new TextDecoder("ascii");
+
 		const encoder = new TextEncoder();
+
 		const collector = new ResultsCollector(await document.size(), this.cap);
 
 		for await (const chunk of document.readWithUnsavedEdits(0)) {
 			if (this.cancelled || collector.capped) {
 				yield collector.final();
+
 				return;
 			}
 
 			str += decoder.decode(chunk);
 
 			let lastReIndex = 0;
+
 			for (const match of str.matchAll(re)) {
 				const start = strStart + str.slice(0, match.index!).length;
+
 				const length = match[0].length;
 				collector.push(encoder.encode(match[0]), start, start + length);
 				lastReIndex = match.index! + match[0].length;
@@ -193,6 +206,7 @@ export class RegexSearchRequest implements ISearchRequest {
 				str.length - regexSearchWindow,
 				lastReIndex,
 			);
+
 			if (overflow > 0) {
 				strStart += overflow;
 				re.lastIndex = 0;
@@ -200,6 +214,7 @@ export class RegexSearchRequest implements ISearchRequest {
 			}
 
 			const toYield = collector.toYield();
+
 			if (toYield) {
 				yield toYield;
 			}

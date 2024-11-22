@@ -18,6 +18,7 @@ import * as select from "./state";
 export const useTheme = (): ColorMap => {
 	const [colors, setColors] = useState(parseColors());
 	useEffect(() => observeColors(setColors), []);
+
 	return colors;
 };
 
@@ -100,8 +101,10 @@ export const useSize = (
 		}
 
 		const el = target.current;
+
 		setSize(el.getBoundingClientRect());
 		observer.observe(el);
+
 		return () => observer.unobserve(el);
 	}, [target.current]);
 
@@ -112,7 +115,9 @@ export const useLastAsyncRecoilValue = <T>(
 	value: RecoilValue<T>,
 ): [value: T, isStale: boolean] => {
 	const loadable = useRecoilValueLoadable(value);
+
 	const lastValue = useRef<{ value: T; key: string; isStale: boolean }>();
+
 	switch (loadable.state) {
 		case "hasValue":
 			lastValue.current = {
@@ -120,7 +125,9 @@ export const useLastAsyncRecoilValue = <T>(
 				isStale: false,
 				key: value.key,
 			};
+
 			break;
+
 		case "loading":
 			if (lastValue.current?.key !== value.key) {
 				throw loadable.contents; // throwing a promise will trigger <Suspense />
@@ -128,8 +135,10 @@ export const useLastAsyncRecoilValue = <T>(
 				lastValue.current.isStale = true;
 			}
 			break;
+
 		case "hasError":
 			throw loadable.contents;
+
 		default:
 			throw new Error(
 				`Unknown loadable state ${JSON.stringify(loadable)}`,
@@ -147,6 +156,7 @@ export const useGlobalHandler = <T = Event>(
 	useEffect(() => {
 		const l = (evt: Event) => handler(evt as unknown as T);
 		window.addEventListener(name, l);
+
 		return () => window.removeEventListener(name, l);
 	}, deps);
 };
@@ -164,6 +174,7 @@ export const useFileBytes = (
 	useLastAsync = false,
 ) => {
 	const dataPageSize = useRecoilValue(select.dataPageSize);
+
 	if (count > dataPageSize) {
 		throw new Error(
 			"Cannot useFileBytes() with a count larger than the page size",
@@ -174,19 +185,25 @@ export const useFileBytes = (
 	// span across multiple. (We enforce the count is never larger than a page
 	// size, so 2 is all we need.)
 	const startPageNo = Math.floor(offset / dataPageSize);
+
 	const startPageStartsAt = startPageNo * dataPageSize;
+
 	const endPageNo = Math.floor((offset + count) / dataPageSize);
+
 	const endPageStartsAt = endPageNo * dataPageSize;
 
 	const startPageSelector = select.editedDataPages(startPageNo);
+
 	const endPageSelector = select.editedDataPages(endPageNo);
 
 	const startPage = useLastAsync
 		? useLastAsyncRecoilValue(startPageSelector)[0]
 		: useRecoilValue(startPageSelector);
+
 	const endPage = useLastAsync
 		? useLastAsyncRecoilValue(endPageSelector)[0]
 		: useRecoilValue(endPageSelector);
+
 	const target = useMemo(() => new Uint8Array(count), [count]);
 
 	for (let i = 0; i < count; i++) {
@@ -194,6 +211,7 @@ export const useFileBytes = (
 			offset + i >= endPageStartsAt
 				? endPage[offset + i - endPageStartsAt]
 				: startPage[offset + i - startPageStartsAt];
+
 		if (value === undefined) {
 			return target.subarray(0, i);
 		}

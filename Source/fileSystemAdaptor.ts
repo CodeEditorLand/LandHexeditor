@@ -23,6 +23,7 @@ export const accessFile = async (
 
 	if (uri.scheme === "vscode-debug-memory") {
 		const { permissions = 0 } = await vscode.workspace.fs.stat(uri);
+
 		return new DebugFileAccessor(
 			uri,
 			!!(permissions & vscode.FilePermission.Readonly),
@@ -35,10 +36,12 @@ export const accessFile = async (
 		try {
 			// eslint-disable @typescript-eslint/no-var-requires
 			const fs = require("fs");
+
 			const os = require("os");
 			// eslint-enable @typescript-eslint/no-var-requires
 
 			const fileStats = await fs.promises.stat(uri.fsPath);
+
 			const { uid, gid } = os.userInfo();
 
 			const isReadonly: boolean =
@@ -106,6 +109,7 @@ class FileHandleContainer {
 	public dispose() {
 		this.disposed = true;
 		this.handle = undefined;
+
 		if (this.disposeTimeout) {
 			clearTimeout(this.disposeTimeout);
 		}
@@ -116,6 +120,7 @@ class FileHandleContainer {
 	public async close() {
 		await this.handle?.close();
 		this.handle = undefined;
+
 		if (this.disposeTimeout) {
 			clearTimeout(this.disposeTimeout);
 		}
@@ -207,6 +212,7 @@ class NativeFileAccessor implements FileAccessor {
 				target.byteLength,
 				offset,
 			);
+
 			return bytesRead;
 		});
 	}
@@ -233,14 +239,17 @@ class NativeFileAccessor implements FileAccessor {
 		// minimal impact on performance.
 
 		const tmpName = `${this.handle.path}.tmp`;
+
 		const tmp = await this.fs.promises.open(
 			tmpName,
 			this.fs.constants.O_WRONLY |
 				this.fs.constants.O_CREAT |
 				this.fs.constants.O_TRUNC,
 		);
+
 		try {
 			let offset = 0;
+
 			for await (const chunk of stream) {
 				if (cancellation?.isCancellationRequested) {
 					return;
@@ -267,6 +276,7 @@ class NativeFileAccessor implements FileAccessor {
 			}
 
 			let offset = 0;
+
 			for await (const chunk of stream) {
 				if (cancellation?.isCancellationRequested) {
 					return;
@@ -308,8 +318,10 @@ class SimpleFileAccessor implements FileAccessor {
 
 	async read(offset: number, data: Uint8Array): Promise<number> {
 		const contents = await this.getContents();
+
 		const cpy = Math.min(data.length, contents.length - offset);
 		data.set(contents.subarray(offset, cpy + offset));
+
 		return cpy;
 	}
 
@@ -318,7 +330,9 @@ class SimpleFileAccessor implements FileAccessor {
 		cancellation?: vscode.CancellationToken,
 	): Promise<void> {
 		let length = 0;
+
 		const chunks: ArrayLike<number>[] = [];
+
 		for await (const chunk of stream) {
 			if (cancellation?.isCancellationRequested) {
 				throw new vscode.CancellationError();
@@ -329,7 +343,9 @@ class SimpleFileAccessor implements FileAccessor {
 		}
 
 		const data = new Uint8Array(length);
+
 		let offset = 0;
+
 		for (const chunk of chunks) {
 			data.set(chunk, offset);
 			offset += chunk.length;
@@ -340,6 +356,7 @@ class SimpleFileAccessor implements FileAccessor {
 
 	async writeBulk(ops: readonly FileWriteOp[]): Promise<void> {
 		const contents = await this.getContents();
+
 		for (const { data, offset } of ops) {
 			contents.set(data, offset);
 		}
@@ -361,6 +378,7 @@ class SimpleFileAccessor implements FileAccessor {
 		this.contents ??= vscode.workspace.fs.readFile(
 			vscode.Uri.parse(this.uri),
 		);
+
 		return this.contents;
 	}
 }
@@ -415,8 +433,10 @@ class DebugFileAccessor implements FileAccessor {
 		const contents = await vscode.workspace.fs.readFile(
 			this.referenceRange(offset, offset + data.length),
 		);
+
 		const cpy = Math.min(data.length, contents.length);
 		data.set(contents.subarray(0, cpy));
+
 		return cpy;
 	}
 
@@ -456,15 +476,20 @@ const watchWorkspaceFile = (
 	onDidDelete: () => void,
 ): vscode.Disposable => {
 	const base = uri.split("/");
+
 	const fileName = base.pop()!;
+
 	const pattern = new vscode.RelativePattern(
 		vscode.Uri.parse(base.join("/")),
 		fileName,
 	);
 
 	const watcher = vscode.workspace.createFileSystemWatcher(pattern);
+
 	const l1 = watcher.onDidChange(onDidChange);
+
 	const l2 = watcher.onDidDelete(onDidDelete);
+
 	return new vscode.Disposable(() => {
 		l1.dispose();
 		l2.dispose();

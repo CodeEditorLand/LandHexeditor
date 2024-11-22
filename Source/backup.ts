@@ -8,6 +8,7 @@ import * as vscode from "vscode";
 import { HexDocumentEdit } from "../shared/hexDocumentModel";
 
 const encoder = new TextEncoder();
+
 const decoder = new TextDecoder();
 
 export class Backup {
@@ -30,6 +31,7 @@ export class Backup {
 	/** Reads the edits from the backup file. */
 	public async read(): Promise<HexDocumentEdit[]> {
 		let serialized: string;
+
 		try {
 			serialized = decoder.decode(
 				await vscode.workspace.fs.readFile(this.uri),

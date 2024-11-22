@@ -104,6 +104,7 @@ export class Range {
 		}
 
 		const delta: Range[] = [];
+
 		if (this.start !== otherRange.start) {
 			delta.push(new Range(otherRange.start, this.start));
 		}
@@ -122,11 +123,16 @@ export class Range {
  */
 export function getRangeSelectionsFromStack(ranges: readonly Range[]) {
 	const result: Range[] = [];
+
 	const pending = new Set(ranges);
+
 	const within = new Set<Range>();
+
 	let last = -1;
+
 	while (pending.size || within.size) {
 		let nextStart: Range | undefined;
+
 		for (const range of pending) {
 			if (!nextStart || nextStart.start > range.start) {
 				nextStart = range;
@@ -134,6 +140,7 @@ export function getRangeSelectionsFromStack(ranges: readonly Range[]) {
 		}
 
 		let nextEnd: Range | undefined;
+
 		for (const range of within) {
 			if (!nextEnd || nextEnd.end > range.end) {
 				nextEnd = range;

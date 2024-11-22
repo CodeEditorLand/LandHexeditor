@@ -26,6 +26,7 @@ export class DataInspectorView
 				const inspectorType = vscode.workspace
 					.getConfiguration("hexeditor")
 					.get("inspectorType");
+
 				const shouldShow =
 					inspectorType === InspectorLocation.Sidebar && !!doc;
 
@@ -34,6 +35,7 @@ export class DataInspectorView
 					"hexEditor:showSidebarInspector",
 					shouldShow,
 				);
+
 				if (shouldShow) {
 					this.show({ autoReveal: true });
 				}
@@ -120,13 +122,17 @@ export class DataInspectorView
 		const scriptURI = webview.asWebviewUri(
 			vscode.Uri.joinPath(this._extensionURI, "dist", "inspector.js"),
 		);
+
 		const styleURI = webview.asWebviewUri(
 			vscode.Uri.joinPath(this._extensionURI, "dist", "inspector.css"),
 		);
+
 		const endianness = vscode.workspace
 			.getConfiguration()
 			.get("hexeditor.defaultEndianness") as string;
+
 		const nonce = randomString();
+
 		return `<!DOCTYPE html>
             <html lang="en">
             <head>

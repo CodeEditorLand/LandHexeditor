@@ -68,10 +68,13 @@ export function copyAsHex(buffer: Uint8Array) {
 
 export function copyAsLiteral(buffer: Uint8Array) {
 	let encoded: string = "";
+
 	const hexString = Array.from(buffer, (b) =>
 		b.toString(16).padStart(2, "0"),
 	).join("");
+
 	const digits = hexString.match(/.{1,2}/g);
+
 	if (digits) {
 		encoded = "\\x" + digits.join("\\x");
 	}
@@ -81,6 +84,7 @@ export function copyAsLiteral(buffer: Uint8Array) {
 
 export function copyAsC(buffer: Uint8Array, filename: string) {
 	const len = buffer.length;
+
 	let content: string = `unsigned char ${filename}[${len}] =\n{`;
 
 	for (let i = 0; i < len; ++i) {
@@ -102,6 +106,7 @@ export function copyAsC(buffer: Uint8Array, filename: string) {
 
 export function copyAsGo(buffer: Uint8Array, filename: string) {
 	const len = buffer.length;
+
 	let content: string = `// ${filename} (${len} bytes)\n`;
 	content += `var ${filename} = []byte{`;
 
@@ -124,6 +129,7 @@ export function copyAsGo(buffer: Uint8Array, filename: string) {
 
 export function copyAsJava(buffer: Uint8Array, filename: string) {
 	const len = buffer.length;
+
 	let content: string = `byte ${filename}[] =\n{`;
 
 	for (let i = 0; i < len; ++i) {

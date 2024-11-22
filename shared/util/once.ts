@@ -11,6 +11,7 @@ export const once = <R>(
 	fn: () => R,
 ): { (): R; getValue(): R | undefined; forget(): void } => {
 	let value: R | typeof unset = unset;
+
 	const wrapped = () => {
 		if (value === unset) {
 			value = fn();

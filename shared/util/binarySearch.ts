@@ -6,7 +6,9 @@ export const binarySearch =
 	<T>(mapFn: (a: T) => number) =>
 	(value: number, nodes: readonly T[]): number => {
 		let mid: number;
+
 		let lo = 0;
+
 		let hi = nodes.length - 1;
 
 		while (lo <= hi) {

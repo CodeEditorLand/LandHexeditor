@@ -5,6 +5,7 @@ import { ISelectionState } from "./hexDocument";
 import { HexEditorRegistry } from "./hexEditorRegistry";
 
 const addressRe = /^0x[a-f0-9]+$/i;
+
 const decimalRe = /^[0-9]+$/i;
 
 export const showSelectBetweenOffsets = async (
@@ -33,10 +34,12 @@ export const showSelectBetweenOffsets = async (
 		vscode.l10n.t("Enter offset to select from"),
 		focusedOffset,
 	);
+
 	if (offset1 !== undefined) {
 		const offset2 = await getOffset(
 			vscode.l10n.t("Enter offset to select until"),
 		);
+
 		if (offset2 !== undefined) {
 			messaging.sendEvent({
 				type: MessageType.SetFocusedByteRange,
@@ -51,6 +54,7 @@ export const showSelectBetweenOffsets = async (
 		value?: string,
 	): Promise<number | undefined> {
 		const disposables: vscode.Disposable[] = [];
+
 		try {
 			return await new Promise<number | undefined>((resolve, _reject) => {
 				const input = vscode.window.createInputBox();
@@ -64,7 +68,9 @@ export const showSelectBetweenOffsets = async (
 						const value = input.value;
 						input.enabled = false;
 						input.busy = true;
+
 						const offset = validate(value);
+
 						if (offset !== undefined) {
 							resolve(offset);
 						}
@@ -101,6 +107,7 @@ export const showSelectBetweenOffsets = async (
 
 		function validate(text: string): number | undefined {
 			let validatedOffset: number | undefined = undefined;
+
 			if (!text) {
 				validatedOffset = undefined;
 			} else if (addressRe.test(text)) {

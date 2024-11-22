@@ -24,6 +24,7 @@ function readConfigFromPackageJson(extension: vscode.Extension<any>): {
 	aiKey: string;
 } {
 	const packageJSON = extension.packageJSON;
+
 	return {
 		extId: `${packageJSON.publisher}.${packageJSON.name}`,
 		version: packageJSON.version,
@@ -37,6 +38,7 @@ function reopenWithHexEditor() {
 		[key: string]: any;
 		uri: vscode.Uri | undefined;
 	};
+
 	if (activeTabInput.uri) {
 		vscode.commands.executeCommand(
 			"vscode.openWith",
@@ -52,12 +54,14 @@ export async function activate(context: vscode.ExtensionContext) {
 		context.extensionUri,
 		(workerDispose) => context.subscriptions.push(workerDispose),
 	);
+
 	const registry = new HexEditorRegistry(initWorker);
 	// Register the data inspector as a separate view on the side
 	const dataInspectorProvider = new DataInspectorView(
 		context.extensionUri,
 		registry,
 	);
+
 	const configValues = readConfigFromPackageJson(context.extension);
 	context.subscriptions.push(
 		registry,
@@ -74,23 +78,28 @@ export async function activate(context: vscode.ExtensionContext) {
 		configValues.aiKey,
 	);
 	context.subscriptions.push(telemetryReporter);
+
 	const openWithCommand = vscode.commands.registerCommand(
 		"hexEditor.openFile",
 		reopenWithHexEditor,
 	);
+
 	const goToOffsetCommand = vscode.commands.registerCommand(
 		"hexEditor.goToOffset",
 		() => {
 			const first = registry.activeMessaging[Symbol.iterator]().next();
+
 			if (first.value) {
 				showGoToOffset(first.value);
 			}
 		},
 	);
+
 	const selectBetweenOffsetsCommand = vscode.commands.registerCommand(
 		"hexEditor.selectBetweenOffsets",
 		() => {
 			const first = registry.activeMessaging[Symbol.iterator]().next();
+
 			if (first.value) {
 				showSelectBetweenOffsets(first.value, registry);
 			}
@@ -101,6 +110,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		"hexEditor.copyAs",
 		() => {
 			const first = registry.activeMessaging[Symbol.iterator]().next();
+
 			if (first.value) {
 				copyAs(first.value);
 			}
@@ -125,6 +135,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		() => {
 			if (registry.activeDocument) {
 				const focused = registry.activeDocument.selectionState.focused;
+
 				if (focused !== undefined) {
 					vscode.env.clipboard.writeText(
 						focused.toString(16).toUpperCase(),
@@ -139,6 +150,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		() => {
 			if (registry.activeDocument) {
 				const focused = registry.activeDocument.selectionState.focused;
+
 				if (focused !== undefined) {
 					vscode.env.clipboard.writeText(focused.toString());
 				}
@@ -153,6 +165,7 @@ export async function activate(context: vscode.ExtensionContext) {
 				return;
 			}
 			const [leftFile, rightFile] = args[1];
+
 			if (
 				!(
 					leftFile instanceof vscode.Uri &&

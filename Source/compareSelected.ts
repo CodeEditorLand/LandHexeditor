@@ -4,8 +4,10 @@ import { formQuery, parseQuery } from "../shared/util/uri";
 
 const uuidGenerator = () => {
 	let uuid = 0;
+
 	return () => (uuid++).toString();
 };
+
 const uuid = uuidGenerator();
 
 // Initializes our custom editor with diff capabilities
@@ -16,6 +18,7 @@ export const openCompareSelected = (
 	modifiedFile: vscode.Uri,
 ) => {
 	const token = uuid();
+
 	const diffOriginalUri = originalFile.with({
 		scheme: "hexdiff",
 		query: formQuery({

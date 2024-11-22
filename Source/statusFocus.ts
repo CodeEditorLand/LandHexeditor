@@ -47,6 +47,7 @@ export default class StatusFocus extends Disposable {
 	update({ focused }: ISelectionState): void {
 		const nFocus =
 			focused !== undefined ? numberFormat.format(focused) : undefined;
+
 		if (nFocus) {
 			this.item.text = vscode.l10n.t(
 				"{0}/0x{1}",
@@ -56,6 +57,7 @@ export default class StatusFocus extends Disposable {
 			this.item.show();
 		} else {
 			this.item.hide();
+
 			return;
 		}
 	}

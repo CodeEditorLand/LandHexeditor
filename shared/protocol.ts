@@ -63,6 +63,7 @@ export interface IEditorSettings {
 	showDecodedText: boolean;
 	columnWidth: number;
 	inspectorType: InspectorLocation;
+
 	defaultEndianness: Endianness;
 }
 
@@ -193,6 +194,7 @@ export const enum CopyFormat {
 
 export interface TriggerCopyAsMessage {
 	type: MessageType.TriggerCopyAs;
+
 	format: CopyFormat;
 }
 
@@ -235,6 +237,7 @@ export interface SearchRequestMessage {
 	type: MessageType.SearchRequest;
 	query: LiteralSearchQuery | RegExpSearchQuery;
 	cap: number | undefined;
+
 	caseSensitive: boolean;
 }
 
@@ -275,6 +278,7 @@ export interface PasteMessage {
 export interface CopyMessage {
 	type: MessageType.DoCopy;
 	selections: [from: number, to: number][];
+
 	format: CopyFormat;
 }
 
@@ -341,6 +345,7 @@ export class MessageHandler<TTo, TFrom> {
 	): Promise<TResponse> {
 		const id = this.messageIdCounter++;
 		this.postMessage({ body: msg, messageId: id }, transfer);
+
 		return new Promise<TResponse>((resolve, reject) => {
 			this.pendingMessages.set(id, {
 				resolve: resolve as (msg: TFrom) => void,

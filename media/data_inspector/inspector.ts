@@ -10,6 +10,7 @@ import {
 
 declare const acquireVsCodeApi: any;
 export const vscode = acquireVsCodeApi();
+
 let currentByteData: ArrayBuffer;
 
 // Self executing anonymous function
@@ -27,9 +28,12 @@ let currentByteData: ArrayBuffer;
 					(document.getElementById("endianness") as HTMLSelectElement)
 						.value === "little",
 				);
+
 				return;
+
 			case "clear":
 				clearDataInspector();
+
 				return;
 		}
 	});

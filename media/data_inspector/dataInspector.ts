@@ -18,12 +18,14 @@ const getInputElements = (() => {
 		const container = document.querySelector(
 			"#data-inspector .grid-container",
 		) as HTMLElement;
+
 		const existingChild = container.firstElementChild;
 		inputs = [];
 
 		for (const { label } of inspectableTypes) {
 			const labelGridItem = document.createElement("div");
 			labelGridItem.className = "grid-item";
+
 			const labelEl = labelGridItem.appendChild(
 				document.createElement("label"),
 			);
@@ -32,6 +34,7 @@ const getInputElements = (() => {
 
 			const inputGridItem = document.createElement("div");
 			inputGridItem.className = "grid-item";
+
 			const inputEl = inputGridItem.appendChild(
 				document.createElement("input"),
 			);
@@ -78,10 +81,14 @@ export function populateDataInspector(
 	littleEndian: boolean,
 ): void {
 	const dv = new DataView(arrayBuffer);
+
 	const inputElements = getInputElements();
+
 	for (let i = 0; i < inputElements.length; i++) {
 		const element = inputElements[i];
+
 		const { convert, minBytes } = inspectableTypes[i];
+
 		if (dv.byteLength < minBytes) {
 			element.disabled = true;
 			element.value = "End of File";

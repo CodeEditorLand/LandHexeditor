@@ -20,6 +20,7 @@ export interface ILocalizedStrings {
 	findText: string;
 	regexSearch: string;
 	searchInBinaryMode: string;
+
 	caseSensitive: string;
 	cancelSearch: string;
 	previousMatch: string;

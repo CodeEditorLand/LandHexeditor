@@ -11,18 +11,19 @@ interface QuickPickCopyFormat extends vscode.QuickPickItem {
 	label: CopyFormat;
 }
 
-export const copyAsFormats: { [K in CopyFormat]: (buffer: Uint8Array, filename: string) => void } =
-	{
-		[CopyFormat.HexOctets]: copyAsHexOctets,
-		[CopyFormat.Hex]: copyAsHex,
-		[CopyFormat.Literal]: copyAsLiteral,
-		[CopyFormat.Utf8]: copyAsText,
-		[CopyFormat.C]: copyAsC,
-		[CopyFormat.Go]: copyAsGo,
-		[CopyFormat.Java]: copyAsJava,
-		[CopyFormat.JSON]: copyAsJSON,
-		[CopyFormat.Base64]: copyAsBase64,
-	};
+export const copyAsFormats: {
+	[K in CopyFormat]: (buffer: Uint8Array, filename: string) => void;
+} = {
+	[CopyFormat.HexOctets]: copyAsHexOctets,
+	[CopyFormat.Hex]: copyAsHex,
+	[CopyFormat.Literal]: copyAsLiteral,
+	[CopyFormat.Utf8]: copyAsText,
+	[CopyFormat.C]: copyAsC,
+	[CopyFormat.Go]: copyAsGo,
+	[CopyFormat.Java]: copyAsJava,
+	[CopyFormat.JSON]: copyAsJSON,
+	[CopyFormat.Base64]: copyAsBase64,
+};
 
 export const copyAs = async (
 	messaging: ExtensionHostMessageHandler,
@@ -37,15 +38,19 @@ export const copyAs = async (
 		{ label: CopyFormat.Java },
 		{ label: CopyFormat.JSON },
 		{ label: CopyFormat.Base64 },
-		{ label: "Configure HexEditor: Copy Type" as CopyFormat }
+		{ label: "Configure HexEditor: Copy Type" as CopyFormat },
 	];
 
-	vscode.window.showQuickPick(formats).then(format => {
+	vscode.window.showQuickPick(formats).then((format) => {
 		if (format?.label == formats.at(-1)?.label) {
-			vscode.commands.executeCommand('workbench.action.openSettings2', { query: '@id:hexeditor.copyType' });
-		}
-		else if (format) {
-			messaging.sendEvent({ type: MessageType.TriggerCopyAs, format: format["label"] });
+			vscode.commands.executeCommand("workbench.action.openSettings2", {
+				query: "@id:hexeditor.copyType",
+			});
+		} else if (format) {
+			messaging.sendEvent({
+				type: MessageType.TriggerCopyAs,
+				format: format["label"],
+			});
 		}
 	});
 };
@@ -55,8 +60,10 @@ export function copyAsText(buffer: Uint8Array) {
 }
 
 export function copyAsHexOctets(buffer: Uint8Array) {
-	const hexString = Array.from(buffer, (b) => b.toString(16).toUpperCase().padStart(2, "0")).join(" ")
-	vscode.env.clipboard.writeText(hexString)
+	const hexString = Array.from(buffer, (b) =>
+		b.toString(16).toUpperCase().padStart(2, "0"),
+	).join(" ");
+	vscode.env.clipboard.writeText(hexString);
 }
 
 export function copyAsHex(buffer: Uint8Array) {

@@ -46,7 +46,9 @@ export const usePersistedState = <T>(
 	key: string,
 	defaultValue: T,
 ): [T, React.Dispatch<React.SetStateAction<T>>] => {
-	const [value, setValue] = useState<T>(select.getWebviewState(key, defaultValue));
+	const [value, setValue] = useState<T>(
+		select.getWebviewState(key, defaultValue),
+	);
 
 	useLazyEffect(() => {
 		select.setWebviewState(key, value);

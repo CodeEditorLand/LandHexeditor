@@ -9,6 +9,7 @@ import {
 } from "./dataInspector";
 
 declare const acquireVsCodeApi: any;
+
 export const vscode = acquireVsCodeApi();
 
 let currentByteData: ArrayBuffer;

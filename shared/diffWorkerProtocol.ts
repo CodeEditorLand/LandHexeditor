@@ -5,13 +5,16 @@ export type DiffExtensionHostMessageHandler = MessageHandler<
 	ToDiffWorkerMessage,
 	FromDiffWorkerMessage
 >;
+
 export type DiffWorkerMessageHandler = MessageHandler<
 	FromDiffWorkerMessage,
 	ToDiffWorkerMessage
 >;
 
 export type ToDiffWorkerMessage = DiffDecoratorsRequestMessage;
+
 export type FromDiffWorkerMessage = DiffDecoratorResponseMessage;
+
 export enum DiffMessageType {
 	// #region to diffworker
 	DiffDecoratorRequest,

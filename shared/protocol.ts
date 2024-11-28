@@ -307,6 +307,7 @@ export type ExtensionHostMessageHandler = MessageHandler<
 	ToWebviewMessage,
 	FromWebviewMessage
 >;
+
 export type WebviewMessageHandler = MessageHandler<
 	FromWebviewMessage,
 	ToWebviewMessage

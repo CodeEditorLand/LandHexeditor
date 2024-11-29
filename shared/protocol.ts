@@ -43,7 +43,9 @@ export const enum MessageType {
 
 export interface WebviewMessage<T> {
 	messageId: number;
+
 	inReplyTo?: number;
+
 	body: T;
 }
 
@@ -60,8 +62,11 @@ export const enum InspectorLocation {
 
 export interface IEditorSettings {
 	copyType: CopyFormat;
+
 	showDecodedText: boolean;
+
 	columnWidth: number;
+
 	inspectorType: InspectorLocation;
 
 	defaultEndianness: Endianness;
@@ -73,50 +78,70 @@ export interface ICodeSettings {
 
 export interface ReadyResponseMessage {
 	type: MessageType.ReadyResponse;
+
 	initialOffset: number;
+
 	pageSize: number;
+
 	edits: ISerializedEdits;
+
 	editorSettings: IEditorSettings;
+
 	codeSettings: ICodeSettings;
+
 	unsavedEditIndex: number;
+
 	fileSize: number | undefined;
+
 	isReadonly: boolean;
+
 	isLargeFile: boolean;
+
 	editMode: HexDocumentEditOp.Insert | HexDocumentEditOp.Replace;
+
 	decorators: HexDecorator[];
 }
 
 export interface SetEditModeMessage {
 	type: MessageType.SetEditMode;
+
 	mode: HexDocumentEditOp.Insert | HexDocumentEditOp.Replace;
 }
 
 export interface ReadRangeResponseMessage {
 	type: MessageType.ReadRangeResponse;
+
 	data: ArrayBuffer;
 }
 
 export interface SearchResult {
 	from: number;
+
 	to: number;
+
 	previous: Uint8Array;
 }
 
 export interface SearchResultsWithProgress {
 	results: SearchResult[];
+
 	progress: number;
+
 	capped?: boolean;
+
 	outdated?: boolean;
 }
 
 export interface SearchProgressMessage {
 	type: MessageType.SearchProgress;
+
 	data: SearchResultsWithProgress;
 }
 
 /** Notifies the document is saved, any pending edits should be flushed */
 export interface SavedMessage {
 	type: MessageType.Saved;
+
 	unsavedEditIndex: number;
 }
 
@@ -128,40 +153,50 @@ export interface ReloadMessage {
 /** Sets the edits that should be applied to the document */
 export interface SetEditsMessage {
 	type: MessageType.SetEdits;
+
 	edits: ISerializedEdits;
+
 	replaceFileSize?: number | null;
+
 	appendOnly?: boolean;
 }
 
 /** Sets the displayed offset. */
 export interface GoToOffsetMessage {
 	type: MessageType.GoToOffset;
+
 	offset: number;
 }
 
 /** Focuses a byte in the editor. */
 export interface SetFocusedByteMessage {
 	type: MessageType.SetFocusedByte;
+
 	offset: number;
 }
 
 /** Focuses a byte range in the editor. */
 export interface SetFocusedByteRangeMessage {
 	type: MessageType.SetFocusedByteRange;
+
 	startingOffset: number;
+
 	endingOffset: number;
 }
 
 /** sets the count of selected bytes. */
 export interface SetSelectedCountMessage {
 	type: MessageType.SetSelectedCount;
+
 	selected: number;
+
 	focused?: number;
 }
 
 /** Sets the hovered byte in the editor */
 export interface SetHoveredByteMessage {
 	type: MessageType.SetHoveredByte;
+
 	hovered?: number;
 }
 
@@ -220,12 +255,15 @@ export interface OpenDocumentMessage {
 
 export interface ReadRangeMessage {
 	type: MessageType.ReadRangeRequest;
+
 	offset: number;
+
 	bytes: number;
 }
 
 export interface MakeEditsMessage {
 	type: MessageType.MakeEdits;
+
 	edits: ISerializedEdits;
 }
 
@@ -235,7 +273,9 @@ export type RegExpSearchQuery = { re: string };
 
 export interface SearchRequestMessage {
 	type: MessageType.SearchRequest;
+
 	query: LiteralSearchQuery | RegExpSearchQuery;
+
 	cap: number | undefined;
 
 	caseSensitive: boolean;
@@ -251,6 +291,7 @@ export interface ClearDataInspectorMessage {
 
 export interface SetInspectByteMessage {
 	type: MessageType.SetInspectByte;
+
 	offset: number;
 }
 
@@ -260,6 +301,7 @@ export interface ReadyRequestMessage {
 
 export interface UpdateEditorSettings {
 	type: MessageType.UpdateEditorSettings;
+
 	editorSettings: IEditorSettings;
 }
 
@@ -270,13 +312,17 @@ export const enum PasteMode {
 
 export interface PasteMessage {
 	type: MessageType.DoPaste;
+
 	offset: number;
+
 	data: Uint8Array;
+
 	mode: PasteMode;
 }
 
 export interface CopyMessage {
 	type: MessageType.DoCopy;
+
 	selections: [from: number, to: number][];
 
 	format: CopyFormat;
@@ -284,6 +330,7 @@ export interface CopyMessage {
 
 export interface RequestDeletesMessage {
 	type: MessageType.RequestDeletes;
+
 	deletes: { start: number; end: number }[];
 }
 
@@ -318,6 +365,7 @@ export type WebviewMessageHandler = MessageHandler<
  */
 export class MessageHandler<TTo, TFrom> {
 	private messageIdCounter = 0;
+
 	private readonly pendingMessages = new Map<
 		number,
 		{ resolve: (msg: TFrom) => void; reject: (err: Error) => void }
@@ -345,6 +393,7 @@ export class MessageHandler<TTo, TFrom> {
 		transfer?: Transferable[],
 	): Promise<TResponse> {
 		const id = this.messageIdCounter++;
+
 		this.postMessage({ body: msg, messageId: id }, transfer);
 
 		return new Promise<TResponse>((resolve, reject) => {
@@ -368,6 +417,7 @@ export class MessageHandler<TTo, TFrom> {
 	public handleMessage(message: WebviewMessage<TFrom>): void {
 		if (message.inReplyTo !== undefined) {
 			this.pendingMessages.get(message.inReplyTo)?.resolve(message.body);
+
 			this.pendingMessages.delete(message.inReplyTo);
 		} else {
 			Promise.resolve(this.messageHandler(message.body)).then(

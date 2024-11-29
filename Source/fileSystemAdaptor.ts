@@ -71,8 +71,11 @@ class FileHandleContainer {
 	private borrowQueue: ((
 		h: fs.promises.FileHandle | Error,
 	) => Promise<void>)[] = [];
+
 	private handle?: fs.promises.FileHandle;
+
 	private disposeTimeout?: NodeJS.Timeout;
+
 	private disposed = false;
 
 	constructor(
@@ -108,17 +111,20 @@ class FileHandleContainer {
 
 	public dispose() {
 		this.disposed = true;
+
 		this.handle = undefined;
 
 		if (this.disposeTimeout) {
 			clearTimeout(this.disposeTimeout);
 		}
+
 		this.rejectAll(new Error("FileHandle was disposed"));
 	}
 
 	/* Closes the handle, but allows it to be reopened if another borrow happens */
 	public async close() {
 		await this.handle?.close();
+
 		this.handle = undefined;
 
 		if (this.disposeTimeout) {
@@ -150,6 +156,7 @@ class FileHandleContainer {
 			}
 
 			await this.borrowQueue[0]?.(this.handle);
+
 			this.borrowQueue.shift();
 		}
 
@@ -158,6 +165,7 @@ class FileHandleContainer {
 		if (this.handle) {
 			this.disposeTimeout = setTimeout(() => {
 				this.handle?.close();
+
 				this.handle = undefined;
 			}, 1000);
 		}
@@ -177,9 +185,13 @@ const filePageSize = 128 * 1024;
 /** Native accessor using Node's filesystem. This can be used. */
 class NativeFileAccessor implements FileAccessor {
 	public readonly uri: string;
+
 	public readonly supportsIncremetalAccess = true;
+
 	private readonly handle: FileHandleContainer;
+
 	public readonly pageSize = filePageSize;
+
 	public readonly isReadonly?: boolean | undefined;
 
 	constructor(
@@ -188,7 +200,9 @@ class NativeFileAccessor implements FileAccessor {
 		private readonly fs: typeof import("fs"),
 	) {
 		this.uri = uri.toString();
+
 		this.isReadonly = isReadonly;
+
 		this.handle = new FileHandleContainer(
 			uri.fsPath,
 			isReadonly ? fs.constants.O_RDONLY : fs.constants.O_RDWR,
@@ -256,6 +270,7 @@ class NativeFileAccessor implements FileAccessor {
 				}
 
 				await tmp.write(chunk, 0, chunk.byteLength, offset);
+
 				offset += chunk.byteLength;
 			}
 		} finally {
@@ -283,6 +298,7 @@ class NativeFileAccessor implements FileAccessor {
 				}
 
 				await fd.write(chunk, 0, chunk.byteLength, offset);
+
 				offset += chunk.byteLength;
 			}
 		});
@@ -295,14 +311,20 @@ class NativeFileAccessor implements FileAccessor {
 
 class SimpleFileAccessor implements FileAccessor {
 	protected contents?: Thenable<Uint8Array> | Uint8Array;
+
 	private readonly fsPath: string;
+
 	public readonly isReadonly: boolean;
+
 	public readonly uri: string;
+
 	public readonly pageSize = filePageSize;
 
 	constructor(uri: vscode.Uri) {
 		this.uri = uri.toString();
+
 		this.fsPath = uri.fsPath;
+
 		this.isReadonly =
 			vscode.workspace.fs.isWritableFileSystem(this.uri) === false;
 	}
@@ -320,6 +342,7 @@ class SimpleFileAccessor implements FileAccessor {
 		const contents = await this.getContents();
 
 		const cpy = Math.min(data.length, contents.length - offset);
+
 		data.set(contents.subarray(offset, cpy + offset));
 
 		return cpy;
@@ -339,6 +362,7 @@ class SimpleFileAccessor implements FileAccessor {
 			}
 
 			chunks.push(chunk);
+
 			length += chunk.length;
 		}
 
@@ -348,6 +372,7 @@ class SimpleFileAccessor implements FileAccessor {
 
 		for (const chunk of chunks) {
 			data.set(chunk, offset);
+
 			offset += chunk.length;
 		}
 
@@ -360,6 +385,7 @@ class SimpleFileAccessor implements FileAccessor {
 		for (const { data, offset } of ops) {
 			contents.set(data, offset);
 		}
+
 		return vscode.workspace.fs.writeFile(
 			vscode.Uri.parse(this.uri),
 			contents,
@@ -388,6 +414,7 @@ class UntitledFileAccessor extends SimpleFileAccessor {
 
 	constructor(uri: vscode.Uri, untitledContents: Uint8Array) {
 		super(uri);
+
 		this.contents = untitledContents;
 	}
 
@@ -405,6 +432,7 @@ class UntitledFileAccessor extends SimpleFileAccessor {
  */
 class DebugFileAccessor implements FileAccessor {
 	public readonly supportsIncremetalAccess = true;
+
 	public readonly uri: string;
 
 	/**
@@ -435,6 +463,7 @@ class DebugFileAccessor implements FileAccessor {
 		);
 
 		const cpy = Math.min(data.length, contents.length);
+
 		data.set(contents.subarray(0, cpy));
 
 		return cpy;
@@ -492,7 +521,9 @@ const watchWorkspaceFile = (
 
 	return new vscode.Disposable(() => {
 		l1.dispose();
+
 		l2.dispose();
+
 		watcher.dispose();
 	});
 };

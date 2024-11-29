@@ -26,12 +26,16 @@ export enum DiffMessageType {
 
 export interface DiffDecoratorsRequestMessage {
 	type: DiffMessageType.DiffDecoratorRequest;
+
 	original: Uint8Array;
+
 	modified: Uint8Array;
 }
 
 export interface DiffDecoratorResponseMessage {
 	type: DiffMessageType.DiffDecoratorResponse;
+
 	original: HexDecorator[];
+
 	modified: HexDecorator[];
 }

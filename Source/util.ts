@@ -12,6 +12,7 @@ export function randomString(len = 32): string {
 	for (let i = 0; i < len; i++) {
 		text += possible.charAt(Math.floor(Math.random() * possible.length));
 	}
+
 	return text;
 }
 
@@ -61,6 +62,7 @@ export const flattenBuffers = (buffers: readonly Uint8Array[]): Uint8Array => {
 
 	for (const buffer of buffers) {
 		target.set(buffer, offset);
+
 		offset += buffer.byteLength;
 	}
 
@@ -69,6 +71,7 @@ export const flattenBuffers = (buffers: readonly Uint8Array[]): Uint8Array => {
 
 export const getBaseName = (path: string): string => {
 	let filename = path.split("/").pop()!;
+
 	filename = filename.substring(0, filename.lastIndexOf(".")) || filename;
 
 	return filename.replace(/[^a-z0-9]/gi, "");

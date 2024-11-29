@@ -6,5 +6,6 @@ export enum HexDecoratorType {
 
 export interface HexDecorator {
 	type: HexDecoratorType;
+
 	range: { start: number; end: number };
 }

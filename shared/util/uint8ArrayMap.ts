@@ -12,6 +12,7 @@ export class Uint8ArrayMap<T> {
 
 		if (!existing) {
 			const rec = { buf, value: unwrap(value) };
+
 			this.table.set(hash, [rec]);
 
 			return rec.value;
@@ -24,6 +25,7 @@ export class Uint8ArrayMap<T> {
 		}
 
 		const rec = { buf, value: unwrap(value) };
+
 		existing.push(rec);
 
 		return rec.value;
@@ -58,6 +60,7 @@ function arrEquals(a: Uint8Array, b: Uint8Array) {
 	if (a.length !== b.length) {
 		return false;
 	}
+
 	for (let i = 0; i < a.length; i++) {
 		if (a[i] !== b[i]) {
 			return false;
@@ -74,6 +77,7 @@ function doHash(b: Uint8Array, hashVal = 0) {
 	for (let i = 0, length = b.length; i < length; i++) {
 		hashVal = numberHash(b[i], hashVal);
 	}
+
 	return hashVal;
 }
 

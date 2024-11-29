@@ -100,6 +100,7 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 
 	private _editMode: HexDocumentEditOp.Insert | HexDocumentEditOp.Replace =
 		HexDocumentEditOp.Insert;
+
 	private _hoverState: number | undefined = undefined;
 	/** Search provider for the document. */
 	public readonly searchProvider = new SearchProvider();
@@ -148,6 +149,7 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 				);
 			}
 		}
+
 		return [];
 	}
 
@@ -175,7 +177,9 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 
 		for await (const chunk of this.model.readWithUnsavedEdits(offset)) {
 			const read = Math.min(chunk.length, target.length - soFar);
+
 			target.set(chunk.subarray(0, read), soFar);
+
 			soFar += read;
 
 			if (soFar === length) {
@@ -211,6 +215,7 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 	dispose(): void {
 		// Notify subsribers to the custom document we are disposing of it
 		this._onDidDispose.fire();
+
 		this.model.dispose();
 		// Disposes of all the events attached to the custom document
 		super.dispose();
@@ -232,6 +237,7 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 
 	public set selectionState(state: ISelectionState) {
 		this._selectionState = state;
+
 		this._onDidChangeSelectionState.fire(state);
 	}
 
@@ -254,6 +260,7 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 		mode: HexDocumentEditOp.Insert | HexDocumentEditOp.Replace,
 	) {
 		this._editMode = mode;
+
 		this._onDidChangeEditMode.fire(mode);
 	}
 
@@ -269,6 +276,7 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 
 	public set hoverState(byte: number | undefined) {
 		this._hoverState = byte;
+
 		this._onDidChangeHoverState.fire(byte);
 	}
 
@@ -368,7 +376,9 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 	 */
 	public async save(_cancellation?: vscode.CancellationToken): Promise<void> {
 		this.lastSave = Date.now();
+
 		await this.model.save();
+
 		this.lastSave = Date.now();
 	}
 
@@ -382,16 +392,22 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 		if (cancellation && cancellation.isCancellationRequested) {
 			return;
 		}
+
 		if (!this.model.isFiniteSize) {
 			// todo: we could prompt for the number of bytes to save?
 			throw new Error("Cannot save a document without a finite size");
 		}
 
 		const newFile = await accessFile(targetResource);
+
 		this.lastSave = Date.now();
+
 		await newFile.writeStream(this.model.readWithUnsavedEdits());
+
 		this.lastSave = Date.now();
+
 		this.model.dispose();
+
 		this.model = new HexDocumentModel({
 			accessor: newFile,
 			isFiniteSize: true,
@@ -404,6 +420,7 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 	 */
 	async revert(_token?: vscode.CancellationToken): Promise<void> {
 		this.model.revert();
+
 		this._onDidRevert.fire();
 	}
 
@@ -416,6 +433,7 @@ export class HexDocument extends Disposable implements vscode.CustomDocument {
 		destination: vscode.Uri,
 	): Promise<vscode.CustomDocumentBackup> {
 		const backup = new Backup(destination);
+
 		await backup.write(this.model.unsavedEdits);
 
 		return {

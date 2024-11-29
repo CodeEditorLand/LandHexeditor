@@ -1,6 +1,8 @@
 export interface HexEditorUriQuery {
 	baseAddress?: string;
+
 	token?: string;
+
 	side?: "modified" | "original";
 }
 
@@ -37,6 +39,7 @@ export function parseQuery(queryString: string): HexEditorUriQuery {
 			}
 		}
 	}
+
 	return queries;
 }
 
@@ -53,5 +56,6 @@ export function formQuery(queries: HexEditorUriQuery): string {
 			query.push(`${q}=${queryValue}`);
 		}
 	}
+
 	return query.join("&");
 }

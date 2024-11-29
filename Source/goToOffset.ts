@@ -10,6 +10,7 @@ export const showGoToOffset = (
 	messaging: ExtensionHostMessageHandler,
 ): void => {
 	const input = vscode.window.createInputBox();
+
 	input.placeholder = "Enter offset to go to";
 
 	messaging.sendEvent({ type: MessageType.StashDisplayedOffset });
@@ -37,6 +38,7 @@ export const showGoToOffset = (
 
 		if (lastValue !== undefined) {
 			input.validationMessage = "";
+
 			messaging.sendEvent({
 				type: MessageType.GoToOffset,
 				offset: lastValue,

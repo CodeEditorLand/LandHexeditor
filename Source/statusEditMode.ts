@@ -16,6 +16,7 @@ import { HexEditorRegistry } from "./hexEditorRegistry";
  */
 export default class StatusEditMode extends Disposable {
 	private readonly item: vscode.StatusBarItem;
+
 	private readonly docChangeListener = this._register(new DisposableValue());
 
 	constructor(registry: HexEditorRegistry) {
@@ -27,7 +28,9 @@ export default class StatusEditMode extends Disposable {
 				99,
 			),
 		);
+
 		this.item.tooltip = vscode.l10n.t("Switch Edit Mode");
+
 		this.item.command = "hexEditor.switchEditMode";
 
 		const trackDocument = (doc: HexDocument | undefined) => {
@@ -35,7 +38,9 @@ export default class StatusEditMode extends Disposable {
 				this.docChangeListener.value = doc.onDidChangeEditMode((e) =>
 					this.update(e),
 				);
+
 				this.update(doc.editMode);
+
 				this.show();
 			} else {
 				this.hide();
@@ -43,6 +48,7 @@ export default class StatusEditMode extends Disposable {
 		};
 
 		this._register(registry.onDidChangeActiveDocument(trackDocument));
+
 		trackDocument(registry.activeDocument);
 	}
 
@@ -56,6 +62,7 @@ export default class StatusEditMode extends Disposable {
 
 			return;
 		}
+
 		this.item.show();
 	}
 

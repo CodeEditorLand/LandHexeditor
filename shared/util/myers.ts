@@ -20,6 +20,7 @@ export class MyersDiff {
 	public static toDecorator(script: ArrayChange<any>[]) {
 		const out: {
 			original: HexDecorator[];
+
 			modified: HexDecorator[];
 		} = { original: [], modified: [] };
 
@@ -33,6 +34,7 @@ export class MyersDiff {
 					type: HexDecoratorType.Delete,
 					range: r,
 				});
+
 				out.modified.push({
 					type: HexDecoratorType.Empty,
 					range: r,
@@ -42,13 +44,16 @@ export class MyersDiff {
 					type: HexDecoratorType.Empty,
 					range: r,
 				});
+
 				out.modified.push({
 					type: HexDecoratorType.Insert,
 					range: r,
 				});
 			}
+
 			offset += change.count!;
 		}
+
 		return out;
 	}
 }

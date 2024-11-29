@@ -59,6 +59,7 @@ export function withinAnyRange(num: number, ranges: Range[]): boolean {
 			return true;
 		}
 	}
+
 	return false;
 }
 
@@ -68,7 +69,9 @@ export function withinAnyRange(num: number, ranges: Range[]): boolean {
  */
 export function generateCharacterRanges(): Range[] {
 	const ranges: Range[] = [];
+
 	ranges.push(new Range(0, 32));
+
 	ranges.push(new Range(127));
 
 	return ranges;
@@ -202,6 +205,7 @@ export const getScrollDimensions = (() => {
 		}
 
 		const el = document.createElement("div");
+
 		el.classList.add(style.scrollbar);
 
 		document.body.appendChild(el);
@@ -211,6 +215,7 @@ export const getScrollDimensions = (() => {
 		const height = el.offsetHeight - el.clientHeight;
 
 		document.body.removeChild(el);
+
 		value = { width, height };
 
 		return value;

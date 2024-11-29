@@ -19,6 +19,7 @@ export class SearchProvider {
 		request: ISearchRequest,
 	): void {
 		this._request?.dispose();
+
 		this._request = request;
 
 		(async () => {
@@ -36,6 +37,7 @@ export class SearchProvider {
 	 */
 	public cancel(): void {
 		this._request?.dispose();
+
 		this._request = undefined;
 	}
 }

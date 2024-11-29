@@ -17,23 +17,28 @@ export const enum HexDocumentEditOp {
 
 export interface GenericHexDocumentEdit {
 	op: HexDocumentEditOp;
+
 	offset: number;
 }
 
 /** note: value.length === previous.length in replace operations */
 export interface HexDocumentReplaceEdit extends GenericHexDocumentEdit {
 	op: HexDocumentEditOp.Replace;
+
 	value: Uint8Array;
+
 	previous: Uint8Array;
 }
 
 export interface HexDocumentDeleteEdit extends GenericHexDocumentEdit {
 	op: HexDocumentEditOp.Delete;
+
 	previous: Uint8Array;
 }
 
 export interface HexDocumentInsertEdit extends GenericHexDocumentEdit {
 	op: HexDocumentEditOp.Insert;
+
 	value: Uint8Array;
 }
 
@@ -47,6 +52,7 @@ export interface HexDocumentInsertEdit extends GenericHexDocumentEdit {
  */
 export interface HexDocumentEmptyInsertEdit extends GenericHexDocumentEdit {
 	op: HexDocumentEditOp.EmptyInsert;
+
 	length: number;
 }
 
@@ -61,6 +67,7 @@ export type HexDocumentEdit =
  */
 export interface HexDocumentEditReference {
 	undo(): readonly HexDocumentEdit[];
+
 	redo(): readonly HexDocumentEdit[];
 }
 
@@ -96,8 +103,11 @@ export type EditRange =
 	/** Read from "roffset" in the file, starting at "offset" in the edited version */
 	| {
 			op: EditRangeOp.Read;
+
 			editIndex: number;
+
 			offset: number;
+
 			roffset: number;
 	  }
 	/** Skip starting at "offset" in the edited version of the file */
@@ -105,14 +115,20 @@ export type EditRange =
 	/** Insert "value" at the "offset" in th edited version of the file */
 	| {
 			op: EditRangeOp.Insert;
+
 			editIndex: number;
+
 			offset: number;
+
 			value: Uint8Array;
 	  }
 	| {
 			op: EditRangeOp.EmptyInsert;
+
 			editIndex: number;
+
 			offset: number;
+
 			length: number;
 	  };
 
@@ -125,23 +141,32 @@ export interface IEditTimeline {
 
 export class HexDocumentModel {
 	public readonly supportsLengthChanges: boolean;
+
 	public readonly isFiniteSize: boolean;
+
 	public readonly pageSize: number;
+
 	private readonly accessor: FileAccessor;
 	/** Guard to make sure only one save operation happens at a time */
 	private readonly saveGuard = bulkhead(1, Infinity);
 	/** First index in the _edits array that's unsaved */
 	private _unsavedEditIndex = 0;
+
 	private _edits: HexDocumentEdit[];
 
 	constructor(options: HexDocumentModelOptions) {
 		this._edits = options.edits
 			? options.edits.saved.concat(options.edits.unsaved)
 			: [];
+
 		this._unsavedEditIndex = options.edits?.saved.length ?? 0;
+
 		this.supportsLengthChanges = options.supportsLengthChanges;
+
 		this.isFiniteSize = options.isFiniteSize;
+
 		this.accessor = options.accessor;
+
 		this.pageSize = options.accessor.pageSize;
 	}
 
@@ -173,6 +198,7 @@ export class HexDocumentModel {
 		if (diskSize === undefined) {
 			return undefined;
 		}
+
 		return diskSize;
 	}
 
@@ -190,6 +216,7 @@ export class HexDocumentModel {
 		if (diskSize === undefined) {
 			return undefined;
 		}
+
 		const { sizeDelta } = this.getUnsavedEditTimeline();
 
 		return diskSize + sizeDelta;
@@ -272,6 +299,7 @@ export class HexDocumentModel {
 		if (toSave.length === 0) {
 			return Promise.resolve();
 		}
+
 		return this.saveGuard.execute(async () => {
 			// for length changes, we must rewrite the entire file. Or at least from
 			// the offset of the first edit. For replacements we can selectively write.
@@ -292,7 +320,9 @@ export class HexDocumentModel {
 				// todo: technically only need to rewrite starting from the first edit
 				await this.accessor.writeStream(this.readWithUnsavedEdits());
 			}
+
 			this._unsavedEditIndex += toSave.length;
+
 			this.getUnsavedEditTimeline.forget();
 
 			this.getSizeInner.forget();
@@ -304,10 +334,15 @@ export class HexDocumentModel {
 	 */
 	public revert(): void {
 		this._unsavedEditIndex = 0;
+
 		this._edits = [];
+
 		this.accessor.invalidate?.();
+
 		this.getAllEditTimeline.forget();
+
 		this.getUnsavedEditTimeline.forget();
+
 		this.getSizeInner.forget();
 	}
 
@@ -320,8 +355,11 @@ export class HexDocumentModel {
 		edits: readonly HexDocumentEdit[],
 	): HexDocumentEditReference {
 		const index = this._edits.length;
+
 		this._edits.push(...edits);
+
 		this.getAllEditTimeline.forget();
+
 		this.getUnsavedEditTimeline.forget();
 
 		return {
@@ -333,14 +371,18 @@ export class HexDocumentModel {
 				} else {
 					this._edits.push(...edits.map(reverseEdit));
 				}
+
 				this.getAllEditTimeline.forget();
+
 				this.getUnsavedEditTimeline.forget();
 
 				return this._edits;
 			},
 			redo: () => {
 				this._edits.push(...edits);
+
 				this.getAllEditTimeline.forget();
+
 				this.getUnsavedEditTimeline.forget();
 
 				return this._edits;
@@ -394,6 +436,7 @@ export async function* readUsingRanges(
 			if (readLast <= 0) {
 				continue;
 			}
+
 			const toYield =
 				readLast < range.length
 					? buf.fill(0, -readLast).subarray(-readLast)
@@ -402,6 +445,7 @@ export async function* readUsingRanges(
 			if (toYield.length > 0) {
 				yield toYield;
 			}
+
 			continue;
 		}
 
@@ -420,6 +464,7 @@ export async function* readUsingRanges(
 			if (toYield.length > 0) {
 				yield toYield;
 			}
+
 			continue;
 		}
 
@@ -440,7 +485,9 @@ export async function* readUsingRanges(
 			if (bytes === 0) {
 				break; // EOF
 			}
+
 			yield buf.subarray(0, bytes);
+
 			roffset += bytes;
 		}
 	}
@@ -543,6 +590,7 @@ export const buildEditTimeline = (
 		if (i === ranges.length || ranges[i].offset > edit.offset) {
 			i--;
 		}
+
 		const split = ranges[i];
 
 		if (
@@ -554,6 +602,7 @@ export const buildEditTimeline = (
 				split,
 				edit.offset - split.offset,
 			);
+
 			ranges.splice(
 				i,
 				1,
@@ -573,6 +622,7 @@ export const buildEditTimeline = (
 						},
 				after,
 			);
+
 			shiftAfter(
 				i + 2,
 				edit.op === HexDocumentEditOp.Insert
@@ -600,6 +650,7 @@ export const buildEditTimeline = (
 				ranges[until],
 				edit.offset + edit.previous.length - ranges[until].offset,
 			);
+
 			ranges.splice(
 				i,
 				until - i + 1,

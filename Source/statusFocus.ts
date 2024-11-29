@@ -16,6 +16,7 @@ const numberFormat = new Intl.NumberFormat();
  */
 export default class StatusFocus extends Disposable {
 	private readonly item: vscode.StatusBarItem;
+
 	private readonly docChangeListener = this._register(new DisposableValue());
 
 	constructor(registry: HexEditorRegistry) {
@@ -33,7 +34,9 @@ export default class StatusFocus extends Disposable {
 				this.docChangeListener.value = doc.onDidChangeSelectionState(
 					(e) => this.update(e),
 				);
+
 				this.update(doc.selectionState);
+
 				this.show();
 			} else {
 				this.hide();
@@ -41,6 +44,7 @@ export default class StatusFocus extends Disposable {
 		};
 
 		this._register(registry.onDidChangeActiveDocument(trackDocument));
+
 		trackDocument(registry.activeDocument);
 	}
 
@@ -54,6 +58,7 @@ export default class StatusFocus extends Disposable {
 				nFocus,
 				focused!.toString(16).toUpperCase(),
 			);
+
 			this.item.show();
 		} else {
 			this.item.hide();

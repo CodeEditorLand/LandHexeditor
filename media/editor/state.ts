@@ -169,12 +169,14 @@ const diskFileSize = atom({
 					fx.setSelf(msg.replaceFileSize ?? undefined);
 				}
 			});
+
 			registerHandler(MessageType.Saved, () => {
 				const size = fx.getLoadable(diskFileSize).getValue();
 
 				if (size === undefined) {
 					return;
 				}
+
 				fx.setSelf(
 					size +
 						fx.getLoadable(unsavedEditTimeline).getValue()
@@ -260,7 +262,9 @@ export const bypassLargeFilePrompt = atom({
 
 export interface IDimensions {
 	width: number;
+
 	height: number;
+
 	rowPxHeight: number;
 }
 
@@ -311,13 +315,16 @@ export const offset = atom({
 			registerHandler(MessageType.PopDisplayedOffset, () => {
 				if (stashedOffset !== undefined) {
 					fx.setSelf(stashedOffset);
+
 					stashedOffset = undefined;
 				}
 			});
 
 			registerHandler(MessageType.GoToOffset, (msg) => {
 				const s = fx.getLoadable(columnWidth).getValue();
+
 				vscode.setState({ ...vscode.getState(), offset: msg.offset });
+
 				fx.setSelf(startOfRowContainingByte(msg.offset, s));
 			});
 		},
@@ -408,6 +415,7 @@ export const edits = atom<readonly HexDocumentEdit[]>({
 
 			registerHandler(MessageType.SetEdits, (msg) => {
 				const edits = deserializeEdits(msg.edits);
+
 				fx.setSelf((prev) =>
 					msg.appendOnly
 						? [
@@ -505,6 +513,7 @@ export const editedDataPages = selectorFamily({
 							page.byteLength - start,
 							target.byteLength,
 						);
+
 						target.set(page.subarray(start, start + len), 0);
 
 						return Promise.resolve(len);
@@ -519,7 +528,9 @@ export const editedDataPages = selectorFamily({
 
 			for await (const chunk of it) {
 				const read = Math.min(chunk.length, target.length - soFar);
+
 				target.set(chunk.subarray(0, read), soFar);
+
 				soFar += read;
 
 				if (soFar === pageSize) {
@@ -546,6 +557,7 @@ export const decoratorsPage = selectorFamily({
 			if (allDecorators.length === 0) {
 				return [];
 			}
+
 			const pageSize = get(dataPageSize);
 
 			const searcherByEnd = binarySearch<HexDecorator>(

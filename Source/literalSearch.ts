@@ -62,7 +62,9 @@ export class LiteralSearch {
 
 		for (let i = 0; i < chunk.length; i++) {
 			buffer[this.index++ % needleLen] = chunk[i];
+
 			this.usableBuffer++;
+
 			this.attemptMatch();
 		}
 	}
@@ -92,6 +94,7 @@ export class LiteralSearch {
 				) {
 					return;
 				}
+
 				k++;
 			}
 		}
@@ -101,9 +104,13 @@ export class LiteralSearch {
 		}
 
 		const split = this.index % needleLen;
+
 		this.matchTmpBuf.set(buffer.subarray(split), 0);
+
 		this.matchTmpBuf.set(buffer.subarray(0, split), needleLen - split);
+
 		this.onMatch(this.index - needleLen, this.matchTmpBuf);
+
 		this.usableBuffer = 0;
 	}
 }

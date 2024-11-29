@@ -58,15 +58,23 @@ export const showSelectBetweenOffsets = async (
 		try {
 			return await new Promise<number | undefined>((resolve, _reject) => {
 				const input = vscode.window.createInputBox();
+
 				input.title = inputBoxTitle;
+
 				input.value = value || "";
+
 				input.prompt = inputBoxTitle;
+
 				input.ignoreFocusOut = true;
+
 				input.placeholder = inputBoxTitle;
+
 				disposables.push(
 					input.onDidAccept(() => {
 						const value = input.value;
+
 						input.enabled = false;
+
 						input.busy = true;
 
 						const offset = validate(value);
@@ -74,7 +82,9 @@ export const showSelectBetweenOffsets = async (
 						if (offset !== undefined) {
 							resolve(offset);
 						}
+
 						input.enabled = true;
+
 						input.busy = false;
 					}),
 					input.onDidChangeValue((text) => {
@@ -85,6 +95,7 @@ export const showSelectBetweenOffsets = async (
 								"Offset must be provided as a decimal (12345) or hex (0x12345) address";
 						} else {
 							input.validationMessage = "";
+
 							messaging.sendEvent({
 								type: MessageType.GoToOffset,
 								offset: offset,
@@ -95,10 +106,12 @@ export const showSelectBetweenOffsets = async (
 						messaging.sendEvent({
 							type: MessageType.PopDisplayedOffset,
 						});
+
 						resolve(undefined);
 					}),
 					input,
 				);
+
 				input.show();
 			});
 		} finally {

@@ -63,6 +63,7 @@ export function copyAsHexOctets(buffer: Uint8Array) {
 	const hexString = Array.from(buffer, (b) =>
 		b.toString(16).toUpperCase().padStart(2, "0"),
 	).join(" ");
+
 	vscode.env.clipboard.writeText(hexString);
 }
 
@@ -70,6 +71,7 @@ export function copyAsHex(buffer: Uint8Array) {
 	const hexString = Array.from(buffer, (b) =>
 		b.toString(16).padStart(2, "0"),
 	).join("");
+
 	vscode.env.clipboard.writeText(hexString);
 }
 
@@ -98,7 +100,9 @@ export function copyAsC(buffer: Uint8Array, filename: string) {
 		if (i % 8 == 0) {
 			content += "\n\t";
 		}
+
 		const byte = buffer[i].toString(16).padStart(2, "0");
+
 		content += `0x${byte}, `;
 	}
 
@@ -115,13 +119,16 @@ export function copyAsGo(buffer: Uint8Array, filename: string) {
 	const len = buffer.length;
 
 	let content: string = `// ${filename} (${len} bytes)\n`;
+
 	content += `var ${filename} = []byte{`;
 
 	for (let i = 0; i < len; ++i) {
 		if (i % 8 == 0) {
 			content += "\n\t";
 		}
+
 		const byte = buffer[i].toString(16).padStart(2, "0");
+
 		content += `0x${byte}, `;
 	}
 
@@ -143,7 +150,9 @@ export function copyAsJava(buffer: Uint8Array, filename: string) {
 		if (i % 8 == 0) {
 			content += "\n\t";
 		}
+
 		const byte = buffer[i].toString(16).padStart(2, "0");
+
 		content += `0x${byte}, `;
 	}
 

@@ -14,6 +14,7 @@ export type HexDiffModelBuilder = typeof HexDiffModel.Builder.prototype;
 export class HexDiffModel {
 	/** Guard to make sure only one computation operation happens */
 	private readonly saveGuard = bulkhead(1, Infinity);
+
 	private decorators?: { original: HexDecorator[]; modified: HexDecorator[] };
 
 	constructor(
@@ -41,7 +42,9 @@ export class HexDiffModel {
 				const oArray = new Uint8Array(oSize);
 
 				const mArray = new Uint8Array(mSize);
+
 				await this.originalModel.readInto(0, oArray);
+
 				await this.modifiedModel.readInto(0, mArray);
 
 				const decorators =
@@ -53,8 +56,10 @@ export class HexDiffModel {
 						},
 						[oArray.buffer, mArray.buffer],
 					);
+
 				this.decorators = decorators;
 			}
+
 			return uri.toString() === this.originalModel.uri.toString()
 				? this.decorators.original
 				: this.decorators.modified;
@@ -68,10 +73,13 @@ export class HexDiffModel {
 	static Builder = class {
 		private original: {
 			promise: Promise<HexDocumentModel>;
+
 			resolve: (model: HexDocumentModel) => void;
 		};
+
 		private modified: {
 			promise: Promise<HexDocumentModel>;
+
 			resolve: (model: HexDocumentModel) => void;
 		};
 
@@ -87,10 +95,13 @@ export class HexDiffModel {
 			promise = new Promise<HexDocumentModel>(
 				(resolve) => (res = resolve),
 			);
+
 			this.original = { promise: promise, resolve: res! };
+
 			promise = new Promise<HexDocumentModel>(
 				(resolve) => (res = resolve),
 			);
+
 			this.modified = { promise: promise, resolve: res! };
 		}
 
@@ -103,6 +114,7 @@ export class HexDiffModel {
 			} else {
 				this.modified.resolve(document);
 			}
+
 			return this;
 		}
 
@@ -119,6 +131,7 @@ export class HexDiffModel {
 					this.messageHandler,
 				);
 			}
+
 			return this.built;
 		}
 	};

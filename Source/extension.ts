@@ -20,7 +20,9 @@ import StatusHoverAndSelection from "./statusHoverAndSelection";
 
 function readConfigFromPackageJson(extension: vscode.Extension<any>): {
 	extId: string;
+
 	version: string;
+
 	aiKey: string;
 } {
 	const packageJSON = extension.packageJSON;
@@ -36,6 +38,7 @@ function reopenWithHexEditor() {
 	const activeTabInput = vscode.window.tabGroups.activeTabGroup.activeTab
 		?.input as {
 		[key: string]: any;
+
 		uri: vscode.Uri | undefined;
 	};
 
@@ -63,6 +66,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	);
 
 	const configValues = readConfigFromPackageJson(context.extension);
+
 	context.subscriptions.push(
 		registry,
 		dataInspectorProvider,
@@ -77,6 +81,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		configValues.version,
 		configValues.aiKey,
 	);
+
 	context.subscriptions.push(telemetryReporter);
 
 	const openWithCommand = vscode.commands.registerCommand(
@@ -164,6 +169,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			if (args.length !== 2 && !(args[1] instanceof Array)) {
 				return;
 			}
+
 			const [leftFile, rightFile] = args[1];
 
 			if (
@@ -174,21 +180,33 @@ export async function activate(context: vscode.ExtensionContext) {
 			) {
 				return;
 			}
+
 			openCompareSelected(leftFile, rightFile);
 		},
 	);
 
 	context.subscriptions.push(new StatusEditMode(registry));
+
 	context.subscriptions.push(new StatusFocus(registry));
+
 	context.subscriptions.push(new StatusHoverAndSelection(registry));
+
 	context.subscriptions.push(goToOffsetCommand);
+
 	context.subscriptions.push(selectBetweenOffsetsCommand);
+
 	context.subscriptions.push(copyAsCommand);
+
 	context.subscriptions.push(switchEditModeCommand);
+
 	context.subscriptions.push(openWithCommand);
+
 	context.subscriptions.push(telemetryReporter);
+
 	context.subscriptions.push(copyOffsetAsDec, copyOffsetAsHex);
+
 	context.subscriptions.push(compareSelectedCommand);
+
 	context.subscriptions.push(
 		vscode.workspace.registerFileSystemProvider(
 			"hexdiff",
@@ -201,6 +219,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			},
 		),
 	);
+
 	context.subscriptions.push(
 		HexEditorProvider.register(
 			context,

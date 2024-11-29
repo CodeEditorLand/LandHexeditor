@@ -16,6 +16,7 @@ const numberFormat = new Intl.NumberFormat();
  */
 export default class StatusHoverAndSelection extends Disposable {
 	private readonly item: vscode.StatusBarItem;
+
 	private readonly docChangeListener = this._register(new DisposableValue());
 
 	constructor(registry: HexEditorRegistry) {
@@ -34,10 +35,13 @@ export default class StatusHoverAndSelection extends Disposable {
 				this._register(
 					doc.onDidChangeHoverState(() => this.update(doc)),
 				);
+
 				this._register(
 					doc.onDidChangeSelectionState(() => this.update(doc)),
 				);
+
 				this.update(doc);
+
 				this.show();
 			} else {
 				this.hide();
@@ -45,6 +49,7 @@ export default class StatusHoverAndSelection extends Disposable {
 		};
 
 		this._register(registry.onDidChangeActiveDocument(trackDocument));
+
 		trackDocument(registry.activeDocument);
 	}
 

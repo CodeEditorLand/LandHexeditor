@@ -20,33 +20,46 @@ const getInputElements = (() => {
 		) as HTMLElement;
 
 		const existingChild = container.firstElementChild;
+
 		inputs = [];
 
 		for (const { label } of inspectableTypes) {
 			const labelGridItem = document.createElement("div");
+
 			labelGridItem.className = "grid-item";
 
 			const labelEl = labelGridItem.appendChild(
 				document.createElement("label"),
 			);
+
 			labelEl.htmlFor = `inspect-${label}`;
+
 			labelEl.textContent = label;
 
 			const inputGridItem = document.createElement("div");
+
 			inputGridItem.className = "grid-item";
 
 			const inputEl = inputGridItem.appendChild(
 				document.createElement("input"),
 			);
+
 			inputEl.id = `inspect-${label}`;
+
 			inputEl.type = "text";
+
 			inputEl.disabled = true;
+
 			inputEl.readOnly = true;
+
 			inputEl.autocomplete = "off";
+
 			inputEl.spellcheck = false;
 
 			container.insertBefore(labelGridItem, existingChild);
+
 			container.insertBefore(inputGridItem, existingChild);
+
 			inputs.push(inputEl);
 		}
 
@@ -67,6 +80,7 @@ export const buildDataInspectorUi = () => {
 export function clearDataInspector(): void {
 	for (const element of getInputElements()) {
 		element.disabled = true;
+
 		element.value = "";
 	}
 }
@@ -91,9 +105,11 @@ export function populateDataInspector(
 
 		if (dv.byteLength < minBytes) {
 			element.disabled = true;
+
 			element.value = "End of File";
 		} else {
 			element.disabled = false;
+
 			element.value = convert(dv, littleEndian);
 		}
 	}
@@ -108,5 +124,6 @@ export function changeEndianness(arrayBuffer: ArrayBuffer): void {
 	const littleEndian =
 		(document.getElementById("endianness") as HTMLInputElement).value ===
 		"little";
+
 	populateDataInspector(arrayBuffer, littleEndian);
 }

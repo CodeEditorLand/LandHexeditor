@@ -17,9 +17,12 @@ export function prepareLazyInitDiffWorker(
 	return () => {
 		if (!messageHandler) {
 			const { msgHandler, dispose } = initDiffWorker(extensionUri);
+
 			messageHandler = msgHandler;
+
 			addDispose({ dispose: dispose });
 		}
+
 		return messageHandler;
 	};
 }
@@ -27,6 +30,7 @@ export function prepareLazyInitDiffWorker(
 /**	Initializes the diff worker */
 function initDiffWorker(extensionUri: vscode.Uri): {
 	msgHandler: DiffExtensionHostMessageHandler;
+
 	dispose: () => void;
 } {
 	let worker: Worker;
@@ -49,6 +53,7 @@ function initDiffWorker(extensionUri: vscode.Uri): {
 		// to initialize both workers the same way.
 		const ref = nodeWorker.addListener;
 		(nodeWorker as any).addEventListener = ref;
+
 		worker = nodeWorker as any;
 	}
 

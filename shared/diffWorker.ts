@@ -32,6 +32,7 @@ try {
 		async (message) => onMessage(message),
 		(message) => postMessage(message),
 	);
+
 	onmessage = (e) => messageHandler.handleMessage(e.data);
 } catch {
 	// node worker
@@ -48,6 +49,7 @@ try {
 			async (message) => onMessage(message),
 			(message) => parentPort.postMessage(message),
 		);
+
 		parentPort.on("message", (e) => {
 			messageHandler.handleMessage(e);
 		});

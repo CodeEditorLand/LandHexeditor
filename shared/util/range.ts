@@ -59,6 +59,7 @@ export class Range {
 
 		if (end < start) {
 			[this.start, this.end] = [end, start];
+
 			direction ??= RangeDirection.Descending;
 		} else {
 			direction ??= RangeDirection.Ascending;
@@ -108,6 +109,7 @@ export class Range {
 		if (this.start !== otherRange.start) {
 			delta.push(new Range(otherRange.start, this.start));
 		}
+
 		if (this.end !== otherRange.end) {
 			delta.push(new Range(otherRange.end, this.end));
 		}
@@ -156,14 +158,19 @@ export function getRangeSelectionsFromStack(ranges: readonly Range[]) {
 			) {
 				result.push(new Range(last, nextStart.start));
 			}
+
 			last = nextStart.start;
+
 			within.add(nextStart);
+
 			pending.delete(nextStart);
 		} else if (nextEnd) {
 			if (within.size % 2 === 1 && last !== nextEnd.end) {
 				result.push(new Range(last, nextEnd.end));
 			}
+
 			last = nextEnd.end;
+
 			within.delete(nextEnd);
 		}
 	}

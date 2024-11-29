@@ -15,6 +15,7 @@ export const memoizeLast = <T, R>(fn: (arg: T) => R): ((arg: T) => R) => {
 	return (arg) => {
 		if (arg !== lastArg) {
 			lastReturn = fn(arg);
+
 			lastArg = arg;
 		}
 

@@ -6,6 +6,7 @@ import type * as vscode from "vscode";
 
 export interface FileWriteOp {
 	offset: number;
+
 	data: Uint8Array;
 }
 

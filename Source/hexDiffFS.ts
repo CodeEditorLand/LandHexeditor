@@ -15,12 +15,15 @@ export class HexDiffFSProvider implements vscode.FileSystemProvider {
 	): [string, vscode.FileType][] | Thenable<[string, vscode.FileType][]> {
 		throw new Error("Method not implemented.");
 	}
+
 	createDirectory(uri: vscode.Uri): void | Thenable<void> {
 		throw new Error("Method not implemented.");
 	}
+
 	readFile(uri: vscode.Uri): Uint8Array | Thenable<Uint8Array> {
 		return vscode.workspace.fs.readFile(toFileUri(uri));
 	}
+
 	writeFile(
 		uri: vscode.Uri,
 		content: Uint8Array,
@@ -35,6 +38,7 @@ export class HexDiffFSProvider implements vscode.FileSystemProvider {
 	): void | Thenable<void> {
 		return vscode.workspace.fs.delete(toFileUri(uri), options);
 	}
+
 	rename(
 		oldUri: vscode.Uri,
 		newUri: vscode.Uri,
@@ -42,6 +46,7 @@ export class HexDiffFSProvider implements vscode.FileSystemProvider {
 	): void | Thenable<void> {
 		throw new Error("Method not implemented");
 	}
+
 	copy?(
 		source: vscode.Uri,
 		destination: vscode.Uri,
@@ -49,18 +54,23 @@ export class HexDiffFSProvider implements vscode.FileSystemProvider {
 	): void | Thenable<void> {
 		throw new Error("Method not implemented.");
 	}
+
 	private _emitter = new vscode.EventEmitter<vscode.FileChangeEvent[]>();
+
 	onDidChangeFile: vscode.Event<vscode.FileChangeEvent[]> =
 		this._emitter.event;
+
 	public watch(
 		uri: vscode.Uri,
 		options: {
 			readonly recursive: boolean;
+
 			readonly excludes: readonly string[];
 		},
 	): vscode.Disposable {
 		return new vscode.Disposable(() => {});
 	}
+
 	stat(uri: vscode.Uri): vscode.FileStat | Thenable<vscode.FileStat> {
 		return vscode.workspace.fs.stat(toFileUri(uri));
 	}

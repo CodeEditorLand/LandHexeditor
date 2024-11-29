@@ -13,7 +13,9 @@ export class DataInspectorView
 	implements vscode.WebviewViewProvider
 {
 	public static readonly viewType = "hexEditor.dataInspectorView";
+
 	private _view?: vscode.WebviewView;
+
 	private _lastMessage: unknown;
 
 	constructor(
@@ -21,6 +23,7 @@ export class DataInspectorView
 		registry: HexEditorRegistry,
 	) {
 		super();
+
 		this._register(
 			registry.onDidChangeActiveDocument((doc) => {
 				const inspectorType = vscode.workspace
@@ -49,10 +52,12 @@ export class DataInspectorView
 		_token: vscode.CancellationToken,
 	): void {
 		this._view = webviewView;
+
 		webviewView.webview.options = {
 			enableScripts: true,
 			localResourceRoots: [this._extensionURI],
 		};
+
 		webviewView.webview.html = this._getWebviewHTML(webviewView.webview);
 
 		// Message handler for when the data inspector view sends messages back to the ext host
@@ -83,6 +88,7 @@ export class DataInspectorView
 	public handleEditorMessage(message: unknown): void {
 		// We save the last message as the webview constantly gets disposed of, but the provider still receives messages
 		this._lastMessage = message;
+
 		this._view?.webview.postMessage(message);
 	}
 
@@ -92,6 +98,7 @@ export class DataInspectorView
 	 */
 	public show(options?: {
 		forceFocus?: boolean;
+
 		autoReveal?: boolean;
 	}): void {
 		// Don't reveal the panel if configured not to

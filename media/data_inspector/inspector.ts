@@ -24,6 +24,7 @@ let currentByteData: ArrayBuffer;
 		switch (e.data.method) {
 			case "update":
 				currentByteData = e.data.data;
+
 				populateDataInspector(
 					currentByteData,
 					(document.getElementById("endianness") as HTMLSelectElement)

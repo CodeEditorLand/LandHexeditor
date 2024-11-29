@@ -17,13 +17,16 @@ export class HexEditorRegistry extends Disposable {
 		HexDocument,
 		Set<ExtensionHostMessageHandler>
 	>();
+
 	private readonly diffsBuilder = new Map<
 		string,
 		{ refCount: number; value: HexDiffModelBuilder }
 	>();
+
 	private onChangeEmitter = new vscode.EventEmitter<
 		HexDocument | undefined
 	>();
+
 	private _activeDocument?: HexDocument;
 
 	/**
@@ -52,15 +55,18 @@ export class HexEditorRegistry extends Disposable {
 		private readonly initDiffWorker: () => DiffExtensionHostMessageHandler,
 	) {
 		super();
+
 		this._register(
 			vscode.window.tabGroups.onDidChangeTabs(this.onChangedTabs, this),
 		);
+
 		this._register(
 			vscode.window.tabGroups.onDidChangeTabGroups(
 				this.onChangedTabs,
 				this,
 			),
 		);
+
 		this.onChangedTabs();
 	}
 
@@ -79,6 +85,7 @@ export class HexEditorRegistry extends Disposable {
 			collection.add(messaging);
 		} else {
 			collection = new Set([messaging]);
+
 			this.docs.set(document, collection);
 		}
 
@@ -100,6 +107,7 @@ export class HexEditorRegistry extends Disposable {
 	/** returns a diff model using the file uri */
 	public getDiff(uri: vscode.Uri): {
 		builder: HexDiffModelBuilder | undefined;
+
 		dispose: () => void;
 	} {
 		const { token } = parseQuery(uri.query);
@@ -118,7 +126,9 @@ export class HexEditorRegistry extends Disposable {
 				value: new HexDiffModel.Builder(messageHandler),
 			});
 		}
+
 		const builder = this.diffsBuilder.get(token)!;
+
 		builder.refCount++;
 
 		return {
@@ -156,11 +166,13 @@ export class HexEditorRegistry extends Disposable {
 		}
 
 		this._activeDocument = next;
+
 		vscode.commands.executeCommand(
 			"setContext",
 			"hexEditor:isActive",
 			!!next,
 		);
+
 		this.onChangeEmitter.fire(next);
 	}
 }

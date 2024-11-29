@@ -17,6 +17,7 @@ import * as select from "./state";
 
 export const useTheme = (): ColorMap => {
 	const [colors, setColors] = useState(parseColors());
+
 	useEffect(() => observeColors(setColors), []);
 
 	return colors;
@@ -30,6 +31,7 @@ export const useLazyEffect = (
 	inputs: React.DependencyList,
 ): void => {
 	const isFirst = useRef(true);
+
 	useEffect(() => {
 		if (!isFirst.current) {
 			return fn();
@@ -65,9 +67,11 @@ export const useOnChange = <T>(
 	fn: (value: T, previous: T) => void,
 ): void => {
 	const previous = useRef<T>(value);
+
 	useEffect(() => {
 		if (value !== previous.current) {
 			fn(value, previous.current);
+
 			previous.current = value;
 		}
 	}, [value]);
@@ -105,6 +109,7 @@ export const useSize = (
 		const el = target.current;
 
 		setSize(el.getBoundingClientRect());
+
 		observer.observe(el);
 
 		return () => observer.unobserve(el);
@@ -136,6 +141,7 @@ export const useLastAsyncRecoilValue = <T>(
 			} else {
 				lastValue.current.isStale = true;
 			}
+
 			break;
 
 		case "hasError":
@@ -157,6 +163,7 @@ export const useGlobalHandler = <T = Event>(
 ) => {
 	useEffect(() => {
 		const l = (evt: Event) => handler(evt as unknown as T);
+
 		window.addEventListener(name, l);
 
 		return () => window.removeEventListener(name, l);

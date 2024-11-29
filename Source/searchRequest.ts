@@ -24,6 +24,7 @@ export interface ISearchRequest extends Disposable {
 
 class ResultsCollector {
 	private static readonly targetUpdateInterval = 1000;
+
 	private readonly buffers = new Uint8ArrayMap<Uint8Array>();
 
 	public get capped() {
@@ -38,6 +39,7 @@ class ResultsCollector {
 	public fileOffset = 0;
 
 	private lastYieldedTime = Date.now();
+
 	private results: SearchResult[] = [];
 
 	/** Adds results to the collector */
@@ -52,6 +54,7 @@ class ResultsCollector {
 			this.results.push({ from, to, previous });
 		} else if (this.cap > 0) {
 			this.results.push({ from, to, previous });
+
 			this.cap--;
 		}
 	}
@@ -67,6 +70,7 @@ class ResultsCollector {
 			this.lastYieldedTime = now;
 
 			const results = this.results;
+
 			this.results = [];
 
 			return {
@@ -120,6 +124,7 @@ export class LiteralSearchRequest implements ISearchRequest {
 			}
 
 			streamSearch.push(chunk);
+
 			collector.fileOffset += chunk.length;
 
 			const toYield = collector.toYield();
@@ -149,6 +154,7 @@ const regexSearchWindow = 8 * 1024;
  */
 export class RegexSearchRequest implements ISearchRequest {
 	private cancelled = false;
+
 	private re: RegExp;
 
 	constructor(
@@ -194,7 +200,9 @@ export class RegexSearchRequest implements ISearchRequest {
 				const start = strStart + str.slice(0, match.index!).length;
 
 				const length = match[0].length;
+
 				collector.push(encoder.encode(match[0]), start, start + length);
+
 				lastReIndex = match.index! + match[0].length;
 			}
 
@@ -209,7 +217,9 @@ export class RegexSearchRequest implements ISearchRequest {
 
 			if (overflow > 0) {
 				strStart += overflow;
+
 				re.lastIndex = 0;
+
 				str = str.slice(overflow);
 			}
 

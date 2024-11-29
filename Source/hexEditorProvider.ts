@@ -100,7 +100,9 @@ export class HexEditorProvider
 		);
 
 		const disposables: vscode.Disposable[] = [];
+
 		disposables.push(diff);
+
 		disposables.push(
 			document.onDidRevert(async () => {
 				const replaceFileSize = (await document.size()) ?? null;
@@ -111,6 +113,7 @@ export class HexEditorProvider
 						edits: { edits: [], data: new Uint8Array() },
 						replaceFileSize,
 					});
+
 					messaging.sendEvent({ type: MessageType.ReloadFromDisk });
 				}
 			}),
@@ -136,6 +139,7 @@ export class HexEditorProvider
 				if (!recentlySaved) {
 					document.revert();
 				}
+
 				return;
 			}
 
@@ -187,15 +191,18 @@ export class HexEditorProvider
 
 		// Add the webview to our internal set of active webviews
 		const handle = this._registry.add(document, messageHandler);
+
 		webviewPanel.onDidDispose(() => handle.dispose());
 
 		// Setup initial content for the webview
 		webviewPanel.webview.options = {
 			enableScripts: true,
 		};
+
 		webviewPanel.webview.html = this.getHtmlForWebview(
 			webviewPanel.webview,
 		);
+
 		webviewPanel.webview.onDidReceiveMessage((e) =>
 			messageHandler.handleMessage(e),
 		);
@@ -204,6 +211,7 @@ export class HexEditorProvider
 	private readonly _onDidChangeCustomDocument = new vscode.EventEmitter<
 		vscode.CustomDocumentEditEvent<HexDocument>
 	>();
+
 	public readonly onDidChangeCustomDocument =
 		this._onDidChangeCustomDocument.event;
 
@@ -362,6 +370,7 @@ export class HexEditorProvider
 				(settings as any)[key] = config.get(key);
 			}
 		}
+
 		return settings;
 	}
 
@@ -378,6 +387,7 @@ export class HexEditorProvider
 					: existing.workspaceValue !== undefined
 						? vscode.ConfigurationTarget.Workspace
 						: vscode.ConfigurationTarget.Global;
+
 			config.update(key, settings[key], target);
 		}
 	}
@@ -443,6 +453,7 @@ export class HexEditorProvider
 						? document.insert(message.offset, message.data)
 						: await document.replace(message.offset, message.data),
 				);
+
 				messaging.sendEvent({
 					type: MessageType.SetEdits,
 					edits: serializeEdits(document.edits),
@@ -465,6 +476,7 @@ export class HexEditorProvider
 
 				return;
 			}
+
 			case MessageType.RequestDeletes: {
 				const bytes = await Promise.all(
 					message.deletes.map((d) =>
@@ -479,11 +491,13 @@ export class HexEditorProvider
 						offset: message.deletes[i].start,
 					}),
 				);
+
 				messaging.sendEvent({
 					type: MessageType.SetEdits,
 					edits: serializeEdits(edits),
 					appendOnly: true,
 				});
+
 				this.publishEdit(
 					messaging,
 					document,
@@ -492,6 +506,7 @@ export class HexEditorProvider
 
 				return { type: MessageType.DeleteAccepted };
 			}
+
 			case MessageType.CancelSearch:
 				document.searchProvider.cancel();
 
@@ -515,6 +530,7 @@ export class HexEditorProvider
 						message.cap,
 					);
 				}
+
 				document.searchProvider.start(messaging, request);
 
 				return;

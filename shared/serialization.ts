@@ -3,6 +3,7 @@ import { Uint8ArrayMap } from "./util/uint8ArrayMap";
 
 export interface ISerializedEdits {
 	edits: readonly unknown[];
+
 	data: Uint8Array;
 }
 
@@ -23,6 +24,7 @@ export const serializeEdits = (
 	const allocOrReuse = (buf: Uint8Array) => {
 		const offset = allocTable.set(buf, () => {
 			const offset = allocOffset;
+
 			allocOffset += buf.length;
 
 			return offset;
